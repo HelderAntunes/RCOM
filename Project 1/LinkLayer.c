@@ -2,15 +2,18 @@
 
 volatile int STOP=FALSE;
 
-int flag=1, conta=1;
+int isToSendMessage=TRUE, conta=1;
 
 void atende ();
 int tryConnectInModeTransmitter (int fd);
 void sendSET (int fd);
-void readUA (int fd);
 char calcBCC2 (char* buffer, int length);
 void makeBufferStuffed (char* bufferStuffed, char* buffer, int length);
 int getNumOfEscapeCharactersRequired (char* buffer, int length);
+int readSupervisonOrNonNumeratedFrame (int fd, char * frame);
+int trySendFrame (int fd, char* frame, int frameLength);
+int constructFrame (char* frame, char* buffer, int length);
+void readConfirmation (int fd);
 
 void configLinkLayer(char* port, int baudRate, unsigned int timeout, unsigned int numTransmissions) {
     strcpy(linkLayer->port, port);
@@ -62,118 +65,89 @@ int llopen (int porta, int flagMode) {
 
 void atende()                   // atende alarme
 {
-	printf("Try number: %d\n", conta);
-	flag = 1;
-	conta++;
+    printf("Try number: %d\n", conta);
+    isToSendMessage = TRUE;
+    conta++;
 }
 
 int tryConnectInModeTransmitter(int fd) {
+
+    STOP = FALSE;
+    conta = 1;
+    isToSendMessage = TRUE;
+
     while (conta <= linkLayer->numTransmissions && STOP != TRUE) {
-        if (flag) {
+        if (isToSendMessage) {
             sendSET(fd);
             alarm(linkLayer->timeout);
-            flag = 0;
-            readUA(fd);
+            isToSendMessage = 0;
+            char UA[255];
+            if (readSupervisonOrNonNumeratedFrame(fd, UA) == PASS_IN_STATE_MACHINE)
+                STOP = TRUE;
         }
     }
-    if (STOP == FALSE) {
-        return -1;
-    } else {
-        flag = 1;
-        conta = 1;
+    if (STOP == TRUE) {
         return 0;
+    } else {
+        return -1;
     }
+
 }
 
 void sendSET(int fd) {
     unsigned char SET[5];
-	SET[0] = F;
-	SET[1] = A;
-	SET[2] = C_SET;
-	SET[3] = SET[1] ^ SET[2];
-	SET[4] = F;
-	int w = write(fd, SET, 5);
-	printf("SEND SET: %d bytes written\n", w);
-}
-
-void readUA(int fd) {
-    int j= 0;
-    unsigned char UA[5];
-	int res;
-	tcflush(fd, TCIFLUSH);
-	for(; STOP != TRUE && flag == 0;) {
-        res = read(fd, UA + j, 1);
-        if(res < 1) continue;
-		printf("0x%02x ", UA[j]);
-
-		switch(j){
-              case 0: //reading F
-                if(UA[j] == F)
-                  j++;
-                break;
-              case 1: //reading A
-                if(UA[j] == A)
-                  j++;
-                else if(UA[j] == F)
-                  j = 1;
-                else
-                  j = 0;
-                break;
-              case 2: //reading C
-                if(UA[j] == C_UA)
-                  j++;
-                else if(UA[j] == A)
-                  j = 2;
-                else if(UA[j] == F)
-                  j = 1;
-                else
-                  j = 0;
-                break;
-              case 3: //reading BCC
-                if(UA[j] == A^C_UA)
-                  j++;
-                else if(UA[j] == C_UA)
-                  j = 3;
-                else if(UA[j] == A)
-                  j = 2;
-                else if(UA[j] == F)
-                  j = 1;
-                else
-                  j = 0;
-                break;
-              case 4: //reading F
-                if(UA[j] == F) {
-                    STOP = TRUE;
-                    printf("UA message successful receive!\n");
-                }
-                break;
-            }
-    }
+    SET[0] = F;
+    SET[1] = A_SENDER;
+    SET[2] = C_SET;
+    SET[3] = SET[1] ^ SET[2];
+    SET[4] = F;
+    int w = write(fd, SET, 5);
+    printf("SEND SET: %d bytes written\n", w);
 }
 
 int llwrite (int fd, char * buffer, int length) {
 
+    char* frame;
+    int frameLength = constructFrame(frame, buffer, length);
+
+    STOP = FALSE;
+    isToSendMessage = 1;
+    conta = 1;
+    while(!STOP){
+        if (trySendFrame(fd, frame, frameLength) == -1) {
+            free(frame);
+            return -1;
+        }
+    }
+
+    free(frame);
+
+    return -1;
+}
+
+int constructFrame (char* frame, char* buffer, int length) {
+
+    // stuffing buffer
     int numEscapeCharRequired = getNumOfEscapeCharactersRequired(buffer, length);
     char* bufferStuffed = (char*) malloc(length + numEscapeCharRequired);
     makeBufferStuffed(bufferStuffed, buffer, length);
 
+    // calcula tamanho da frame
     int sizeOfHeaderAndTrailer = 6; // F, A, C, BCC1, BCC2 e F
     int frameLength = length + sizeOfHeaderAndTrailer + numEscapeCharRequired;
-    char* frame = (char*) malloc(frameLength);
+    frame = (char*) malloc(frameLength);
+
+    // preenche frame
     frame[0] = F;
-    frame[1] = A;
+    frame[1] = A_SENDER;
     frame[2] = (linkLayer->sequenceNumber << 6); // Campo de Controlo = 0 S 0 0 0 0 0 0 , em que S = N(s) = 0 ou 1 (ver slide 7 do guião)
     frame[3] = frame[1] ^ frame[2]; // BCC1
+    memcpy(&frame[4], bufferStuffed, length + numEscapeCharRequired);
     char BCC2 = calcBCC2(buffer, length);
     frame[frameLength-2] = BCC2;
     frame[frameLength-1] = F;
 
-
-
-
-
-
-    return -1;
+    return frameLength;
 }
 
 int getNumOfEscapeCharactersRequired (char* buffer, int length) {
@@ -206,6 +180,119 @@ char calcBCC2 (char* buffer, int length) {
         BCC2 ^= buffer[i];
     }
     return BCC2;
+}
+
+int trySendFrame (int fd, char* frame, int frameLength) {
+
+    if(isToSendMessage){
+        if (conta > linkLayer->numTransmissions) {
+            printf("Error: number of transmissions exceeded.\n");
+            return -1;
+        }
+        write(fd, frame, frameLength);
+        alarm(linkLayer->timeout);
+    }
+
+    readConfirmation(fd);
+    return 0;
+}
+
+void readConfirmation (int fd) {
+    char confirmation[255];
+
+    if (readSupervisonOrNonNumeratedFrame(fd, confirmation) == PASS_IN_STATE_MACHINE) {
+
+        switch ((confirmation[2] & 0x0F)) {
+            case C_REJ:
+                if((confirmation[2] >> 7) == linkLayer->sequenceNumber){
+                    alarm(0); // cancela alarme
+                    isToSendMessage = 1;
+                }
+                break;
+            case C_RR:
+                if((confirmation[2] >> 7) != linkLayer->sequenceNumber){
+                    alarm(0);
+                    linkLayer->sequenceNumber = (confirmation[2] >> 7);
+                    STOP = TRUE;
+                }
+                break;
+            default:
+                break;
+        }
+    }
+}
+
+int readSupervisonOrNonNumeratedFrame (int fd, char * frame) {
+    volatile int passInStateMachine = FALSE;
+
+    int state = 0;
+
+    while (!passInStateMachine) {
+        char c;
+        if (state < 5) {
+            int r = read(fd, &c, 1);
+            if (r == -1) {
+                return -1;
+            }
+            else if (r == 0 && isToSendMessage == 1) {  // quando o alarme dispara isToSendMessage fica a 1
+                return -1;
+            }
+        }
+
+        switch (state) {
+            case 0:
+            if (c == F) {
+                frame[state] = c;
+                state++;
+            }
+            break;
+            case 1:
+            if (c == A_SENDER || c == A_RECEIVER) {
+                frame[state] = c;
+                state++;
+            }
+            else if (c != F) {
+                state = 0;
+            }
+            break;
+            case 2:
+            if (c == C_SET || c == C_UA || (c & 0x0F) == C_RR || (c & 0x0F) == C_REJ || c == C_DISC) {
+                frame[state++] = c;
+            }
+            else if (c == F) {
+                state = 1;
+            }
+            else {
+                state = 0;
+            }
+            break;
+            case 3:
+            if (c == (frame[1] ^ frame[2])) {
+                frame[state++] = c;
+            }
+            else if (c == F) {
+                state = 1;
+            }
+            else {
+                state = 0;
+            }
+            break;
+            case 4:
+            if (c == F) {
+                frame[state++] = c;
+            }
+            else {
+                state = 0;
+            }
+            break;
+            default:
+            passInStateMachine = TRUE;
+            state = PASS_IN_STATE_MACHINE;
+            break;
+        }
+    }
+
+    return state;
 }
 
 

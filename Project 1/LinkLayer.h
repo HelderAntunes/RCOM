@@ -16,14 +16,20 @@
 #define TRUE 1
 
 #define F 0x7e
-#define A 0x03
+#define A_RECEIVER 0x01
+#define A_SENDER 0x03
 #define C_SET 0x03
 #define C_UA 0x07
+#define C_RR 0x05
+#define C_REJ 0x01
+#define C_DISC 0x0B
 #define ESCAPE 0x7D
 
 #define TRANSMITTER 0
 #define RECEIVER 1
 #define MAX_FRAME_SIZE 1024
+
+#define PASS_IN_STATE_MACHINE 5
 
 typedef struct LinkLayers {
     char port[20]; /*Dispositivo /dev/ttySx, x = 0, 1*/
