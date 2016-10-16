@@ -4,15 +4,18 @@ volatile int STOP=FALSE;
 
 int flag=1, conta=1;
 
-void atende();
-int tryConnectInModeTransmitter(int fd);
-void sendSET(int fd);
-void readUA(int fd);
+void atende ();
+int tryConnectInModeTransmitter (int fd);
+void sendSET (int fd);
+void readUA (int fd);
+char calcBCC2 (char* buffer, int length);
+void makeBufferStuffed (char* bufferStuffed, char* buffer, int length);
+int getNumOfEscapeCharactersRequired (char* buffer, int length);
 
-void configLinkLayer(char* port, int baudRate, unsigned int sequenceNumber, unsigned int timeout, unsigned int numTransmissions) {
+void configLinkLayer(char* port, int baudRate, unsigned int timeout, unsigned int numTransmissions) {
     strcpy(linkLayer->port, port);
     linkLayer->baudRate = baudRate;
-    linkLayer->sequenceNumber = sequenceNumber;
+    linkLayer->sequenceNumber = 0;
     linkLayer->timeout = timeout;
     linkLayer->numTransmissions = numTransmissions;
 }
@@ -65,7 +68,7 @@ void atende()                   // atende alarme
 }
 
 int tryConnectInModeTransmitter(int fd) {
-    while (conta < linkLayer->numTransmissions && STOP != TRUE) {
+    while (conta <= linkLayer->numTransmissions && STOP != TRUE) {
         if (flag) {
             sendSET(fd);
             alarm(linkLayer->timeout);
@@ -76,6 +79,8 @@ int tryConnectInModeTransmitter(int fd) {
     if (STOP == FALSE) {
         return -1;
     } else {
+        flag = 1;
+        conta = 1;
         return 0;
     }
 }
@@ -147,9 +152,62 @@ void readUA(int fd) {
 }
 
 int llwrite (int fd, char * buffer, int length) {
-    
+
+    int numEscapeCharRequired = getNumOfEscapeCharactersRequired(buffer, length);
+    char* bufferStuffed = (char*) malloc(length + numEscapeCharRequired);
+    makeBufferStuffed(bufferStuffed, buffer, length);
+
+    int sizeOfHeaderAndTrailer = 6; // F, A, C, BCC1, BCC2 e F
+    int frameLength = length + sizeOfHeaderAndTrailer + numEscapeCharRequired;
+    char* frame = (char*) malloc(frameLength);
+    frame[0] = F;
+    frame[1] = A;
+    frame[2] = (linkLayer->sequenceNumber << 6); // Campo de Controlo = 0 S 0 0 0 0 0 0 , em que S = N(s) = 0 ou 1 (ver slide 7 do guião)
+    frame[3] = frame[1] ^ frame[2]; // BCC1
+    char BCC2 = calcBCC2(buffer, length);
+    frame[frameLength-2] = BCC2;
+    frame[frameLength-1] = F;
+
+
+
+
+
+
     return -1;
 }
+
+int getNumOfEscapeCharactersRequired (char* buffer, int length) {
+    int numEscapeChar = 0;
+    int i;
+    for (i = 0; i < length; i++) {
+        if (buffer[i] == F || buffer[i] == ESCAPE) {
+            numEscapeChar++;
+        }
+    }
+    return numEscapeChar;
+}
+
+void makeBufferStuffed (char* bufferStuffed, char* buffer, int length) {
+    int bufIndex, bufStuffedIndex = 0;
+    for (bufIndex = 0; bufIndex < length; bufIndex++) {
+        if (buffer[bufIndex] == F || buffer[bufIndex] == ESCAPE) {
+            bufferStuffed[bufStuffedIndex++] = ESCAPE;
+            bufferStuffed[bufStuffedIndex++] = buffer[bufIndex] ^ 0x20; // ver slide 13
+        } else {
+            bufferStuffed[bufStuffedIndex++] = buffer[bufIndex];
+        }
+    }
+}
+
+char calcBCC2 (char* buffer, int length) {
+    char BCC2 = 0;
+    int i;
+    for (i = 0; i < length; i++) {
+        BCC2 ^= buffer[i];
+    }
+    return BCC2;
+}
+
 
 int llread (int fd, char * buffer) {
     return -1;

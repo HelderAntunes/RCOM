@@ -19,6 +19,7 @@
 #define A 0x03
 #define C_SET 0x03
 #define C_UA 0x07
+#define ESCAPE 0x7D
 
 #define TRANSMITTER 0
 #define RECEIVER 1
@@ -35,7 +36,7 @@ typedef struct LinkLayers {
 
 LinkLayer* linkLayer;
 
-void configLinkLayer(char* port, int baudRate, unsigned int sequenceNumber, unsigned int timeout, unsigned int numTransmissions);
+void configLinkLayer(char* port, int baudRate, unsigned int timeout, unsigned int numTransmissions);
 
 /*
 argumentos
