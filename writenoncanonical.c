@@ -52,7 +52,7 @@ void readUA(int fd) {
         res = read(fd, UA + j, 1);
         if(res < 1) continue;
 		printf("0x%02x ", UA[j]);
-        
+
 		switch(j){
               case 0: //reading F
                 if(UA[j] == F)
@@ -101,19 +101,17 @@ void readUA(int fd) {
 
 int llopen(int fd) {
 
-
     while(conta < 4 && STOP != TRUE){
-	    
+
         if(flag){
             sendSET(fd);
-	        alarm(3);             
+	        alarm(3);
 	        flag = 0;
 	        readUA(fd);
         }
         
-        
 	}
-	
+
 }
 
 int main(int argc, char** argv)
@@ -122,9 +120,9 @@ int main(int argc, char** argv)
     struct termios oldtio,newtio;
     char buf[255];
     int i, sum = 0, speed = 0;
-    
-    if ( (argc < 2) || 
-  	     ((strcmp("/dev/ttyS0", argv[1])!=0) && 
+
+    if ( (argc < 2) ||
+  	     ((strcmp("/dev/ttyS0", argv[1])!=0) &&
   	      (strcmp("/dev/ttyS1", argv[1])!=0) )) {
       printf("Usage:\tnserial SerialPort\n\tex: nserial /dev/ttyS1\n");
       exit(1);
@@ -133,7 +131,7 @@ int main(int argc, char** argv)
     fd = open(argv[1], O_RDWR | O_NOCTTY | O_NONBLOCK);
     if (fd <0) { perror(argv[1]); exit(-1); }
 
-    if ( tcgetattr(fd, &oldtio) == -1) { 
+    if ( tcgetattr(fd, &oldtio) == -1) {
       perror("tcgetattr");
       exit(-1);
     }
@@ -143,8 +141,8 @@ int main(int argc, char** argv)
     newtio.c_iflag = IGNPAR;
     newtio.c_oflag = 0;
     newtio.c_lflag = 0;
-    newtio.c_cc[VTIME]    = 0;  
-    newtio.c_cc[VMIN]     = 1;    
+    newtio.c_cc[VTIME]    = 0;
+    newtio.c_cc[VMIN]     = 1;
 
     tcflush(fd, TCIOFLUSH);
 
@@ -153,11 +151,11 @@ int main(int argc, char** argv)
       exit(-1);
     }
     printf("New termios structure set\n");
-	
+
 	(void) signal(SIGALRM, atende);
 	llopen(fd);
-    
-    
+
+
     sleep(2);
 
     if ( tcsetattr(fd,TCSANOW,&oldtio) == -1) {

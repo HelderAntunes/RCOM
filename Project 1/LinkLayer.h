@@ -1,12 +1,41 @@
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <termios.h>
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <signal.h>
+
+#define BAUDRATE B38400
+#define MODEMDEVICE "/dev/ttyS1"
+#define _POSIX_SOURCE 1 /* POSIX compliant source */
+#define FALSE 0
+#define TRUE 1
+
+#define F 0x7e
+#define A 0x03
+#define C_SET 0x03
+#define C_UA 0x07
+
+#define TRANSMITTER 0
+#define RECEIVER 1
+#define MAX_FRAME_SIZE 1024
+
 typedef struct LinkLayers {
     char port[20]; /*Dispositivo /dev/ttySx, x = 0, 1*/
     int baudRate;
     unsigned int sequenceNumber; /* Número de sequência da trama: 0, 1*/
     unsigned int timeout;
     unsigned int numTransmissions; /* Número de tentativas em caso de falha*/
-    char frame[MAX_SIZE]; /*Trama*/
+    char frame[MAX_FRAME_SIZE]; /*Trama*/
 } LinkLayer;
+
+LinkLayer* linkLayer;
+
+void configLinkLayer(char* port, int baudRate, unsigned int sequenceNumber, unsigned int timeout, unsigned int numTransmissions);
 
 /*
 argumentos
