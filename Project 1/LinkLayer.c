@@ -138,7 +138,7 @@ int sendFrame(int fd, unsigned char c){
 	frame[0] = F;
 	frame[1] = A_SENDER;
 	frame[2] = c;
-	frame[3] = BCC(frame[1], frame[2]);
+	frame[3] = frame[1] ^ frame[2];
 	frame[4] = F;
 
 	int w = write(fd, frame, 5);
@@ -384,7 +384,7 @@ int receiveFrame(int fd, unsigned char* frame){
 			}
 			break;
 		case 3:
-			if(c == BCC(frame[1],frame[2])){
+			if(c == frame[1] ^frame[2]){
 				frame[i] = c;
 				i++;
 				state++;
@@ -447,7 +447,7 @@ int llread (int fd, char * buffer) {
 	int dataSize = destuffedSize - 6; //6 bytes are used in prefix and posfix
 	
 	//Check errors
-	unsigned char BCC2 = calcBCC2(destuffFrame[4], dataSize);
+	unsigned char BCC2 = calcBCC2(&destuffedFrame[4], dataSize);
 	
 	if(destuffedFrame[destuffedSize-2] != BCC2){
 		printf("ERROR in receiveFrame(): BCC2 error\n");
