@@ -14,8 +14,14 @@ typedef struct ApplicationLayers {
 int main(int argc, char** argv)
 {
     printf("fdfsf\n");
-
-    
+	
+	void configLinkLayer("/dev/ttyS0", BAUDRATE, 3, 5);
+	
+	if(argv[1] == "T"){
+		llopen(0, TRANSMITTER);
+	}
+	else
+		llopen(0, RECEIVER);    
 
     return 0;
 }
