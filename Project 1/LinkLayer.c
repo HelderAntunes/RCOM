@@ -6,14 +6,19 @@ int isToSendMessage=TRUE, conta=1;
 
 void atende ();
 int tryConnectInModeTransmitter (int fd);
+int tryConnectInModeReceiver (int fd);
 void sendSET (int fd);
+void sendUA (int fd);
+int sendFrame(int fd, unsigned char c);
 char calcBCC2 (char* buffer, int length);
 void makeBufferStuffed (char* bufferStuffed, char* buffer, int length);
+int destuffFrame(unsigned char* frame, int frameSize, unsigned char* destuffedFrame);
 int getNumOfEscapeCharactersRequired (char* buffer, int length);
 int readSupervisonOrNonNumeratedFrame (int fd, char * frame);
 int trySendFrame (int fd, char* frame, int frameLength);
 int constructFrame (char* frame, char* buffer, int length);
 void readConfirmation (int fd);
+int receiveFrame(int fd, unsigned char* frame);
 
 void configLinkLayer(char* port, int baudRate, unsigned int timeout, unsigned int numTransmissions) {
     strcpy(linkLayer->port, port);
@@ -53,7 +58,8 @@ int llopen (int porta, int flagMode) {
             return -1;
     }
     else if (flagMode == RECEIVER) {
-
+		if (tryConnectInModeReceiver(fd) == -1)
+            return -1;
     }
     else {
         return -1;
@@ -94,6 +100,16 @@ int tryConnectInModeTransmitter(int fd) {
 
 }
 
+int tryConnectInModeReceiver(int fd) {
+	char frame[255];
+	if (readSupervisonOrNonNumeratedFrame(fd, frame) == PASS_IN_STATE_MACHINE){
+		if(frame[2] == C_SET) //Received SET message
+			sendUA(fd); // Answer with UA message
+	}
+	else
+		return -1;
+}
+
 void sendSET(int fd) {
     unsigned char SET[5];
     SET[0] = F;
@@ -103,6 +119,37 @@ void sendSET(int fd) {
     SET[4] = F;
     int w = write(fd, SET, 5);
     printf("SEND SET: %d bytes written\n", w);
+}
+
+void sendUA(int fd) {
+    unsigned char UA[5];
+    US[0] = F;
+    UA[1] = A_SENDER;
+    UA[2] = C_UA;
+    UA[3] = UA[1] ^ UA[2];
+    UA[4] = F;
+    int w = write(fd, UA, 5);
+    printf("SEND UA: %d bytes written\n", w);
+}
+
+int sendFrame(int fd, unsigned char c){
+	unsigned char frame[5]; 
+	
+	frame[0] = F;
+	frame[1] = A;
+	frame[2] = c;
+	frame[3] = BCC(frame[1], frame[2]);
+	frame[4] = F;
+
+	int w = write(fd, frame, 5);
+	printf("%d bytes written\n", w);
+	
+	if(w != 5){
+		printf("ERROR in sendFrame(): could not send frame\n");
+		return -1;
+	}
+	
+	return 0;
 }
 
 int llwrite (int fd, char * buffer, int length) {
@@ -295,9 +342,143 @@ int readSupervisonOrNonNumeratedFrame (int fd, char * frame) {
     return state;
 }
 
+int receiveFrame(int fd, unsigned char* frame){
+	int i = 0;
+	int state = 0;
+	int receiving = TRUE;
+	
+	unsigned char c;
+	
+	while(receiving){
+		read(fd, &c, 1);
+		printf("0x%02x ", c);
+		
+		switch(state){
+		case 0:
+			if(c == F){
+				frame[i] = c;
+				i++;
+				state++;
+			}
+			break;
+		case 1:
+			if(c == A){
+				frame[i] = c;
+				i++;
+				state++;
+			}
+			else if (c != F){
+				state = 0;
+				i = 0;
+			}
+			break;
+		case 2:
+			if(c != F){
+				frame[i] = c;
+				i++;
+				state++;
+			}
+			else{
+				state = 1;
+				i = 1;
+			}
+			break;
+		case 3:
+			if(c == BCC(frame[1],frame[2])){
+				frame[i] = c;
+				i++;
+				state++;
+			}
+			else if(c == F){
+				state 1;
+				i = 1;
+			}
+			else{
+				state 0;
+				i = 0;
+			}
+			break;
+		case 4:
+			if(c == F){
+				frame[i] = c;
+				i++;
+				receiving = FALSE;
+			}
+			else{
+				frame[i] = c;
+				i++;
+			}
+			break;
+		default:
+			break;
+		}
+	}
+	return i;
+}
+
+int destuffFrame(unsigned char* frame, int frameSize, unsigned char* destuffedFrame){
+	
+	int i;
+	int j = 0;
+	for (i = 0; i < size; i++, j++) {
+		if (df.frame[i] == ESC)
+			destuffedFrame.frame[j] = df.frame[++i] ^ 0x20;
+		else
+			destuffedFrame.frame[j] = df.frame[i];
+	}
+	
+	return j;
+}
+
 
 int llread (int fd, char * buffer) {
-    return -1;
+	unsigned char frame[MAX_FRAME_SIZE];
+	unsigned char destuffed_frame[MAX_FRAME_SIZE];
+	
+	//Read frame
+	int frame_size = receiveFrame(fd,frame);
+	if(frame_size == -1 || frame_size < 5){
+		return -1;
+	}
+	
+	//Destuff frame
+	int destuffedSize = destuffFrame(frame, frame_size, destuffedFrame);
+	
+	int dataSize = destuffedSize - 6; //6 bytes are used in prefix and posfix
+	
+	//Check errors
+	unsigned char BCC2 = calcBCC2(destuffFrame[4], dataSize);
+	
+	if(destuffedFrame[destuffedSize-2] != BCC2){
+		printf("ERROR in receiveFrame(): BCC2 error\n");
+		//Send Reject
+		if(destuffedFrame[2] >> 6 == 0){
+			int C_REJ0 = (0 << 7) | C_REJ;
+			sendFrame(fd, C_REJ0);
+		}
+		else if(destuffedFrame[2]  >> 1 == 1){
+			int C_REJ1 = (1 << 7) | C_REJ;
+			sendFrame(fd, C_REJ1);
+		}
+	}
+	else{
+		//Send ReceiverReady
+		
+		if(destuffedFrame[2] >> 6 == 0){
+			int C_RR1 = (1 << 7) | C_RR;
+			sendFrame(fd, C_RR1);
+		}
+		else if(destuffedFrame[2] >> 6 == 1){
+			int C_RR0 = (0 << 7) | C_RR;
+			sendFrame(fd, C_RR0);
+		}
+		
+	}
+	
+	//Fill buffer with data
+	memcpy(buffer,&destuffedFrame[4],dataSize);
+	
+	return dataSize;
 }
 
 int llclose (int fd) {
