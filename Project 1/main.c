@@ -15,7 +15,9 @@ int main(int argc, char** argv)
 {
     printf("fdfsf\n");
 	
-	void configLinkLayer("/dev/ttyS0", BAUDRATE, 3, 5);
+	char port = "/dev/ttyS0";
+	
+	configLinkLayer(port, BAUDRATE, 3, 5);
 	
 	if(argv[1] == "T"){
 		llopen(0, TRANSMITTER);

@@ -123,7 +123,7 @@ void sendSET(int fd) {
 
 void sendUA(int fd) {
     unsigned char UA[5];
-    US[0] = F;
+    UA[0] = F;
     UA[1] = A_SENDER;
     UA[2] = C_UA;
     UA[3] = UA[1] ^ UA[2];
@@ -136,7 +136,7 @@ int sendFrame(int fd, unsigned char c){
 	unsigned char frame[5]; 
 	
 	frame[0] = F;
-	frame[1] = A;
+	frame[1] = A_SENDER;
 	frame[2] = c;
 	frame[3] = BCC(frame[1], frame[2]);
 	frame[4] = F;
@@ -362,7 +362,7 @@ int receiveFrame(int fd, unsigned char* frame){
 			}
 			break;
 		case 1:
-			if(c == A){
+			if(c == A_SENDER){
 				frame[i] = c;
 				i++;
 				state++;
@@ -390,11 +390,11 @@ int receiveFrame(int fd, unsigned char* frame){
 				state++;
 			}
 			else if(c == F){
-				state 1;
+				state = 1;
 				i = 1;
 			}
 			else{
-				state 0;
+				state = 0;
 				i = 0;
 			}
 			break;
@@ -420,11 +420,11 @@ int destuffFrame(unsigned char* frame, int frameSize, unsigned char* destuffedFr
 	
 	int i;
 	int j = 0;
-	for (i = 0; i < size; i++, j++) {
-		if (df.frame[i] == ESC)
-			destuffedFrame.frame[j] = df.frame[++i] ^ 0x20;
+	for (i = 0; i < frameSize; i++, j++) {
+		if (frame[i] == ESC)
+			destuffedFrame[j] = frame[++i] ^ 0x20;
 		else
-			destuffedFrame.frame[j] = df.frame[i];
+			destuffedFrame[j] = frame[i];
 	}
 	
 	return j;
@@ -433,7 +433,7 @@ int destuffFrame(unsigned char* frame, int frameSize, unsigned char* destuffedFr
 
 int llread (int fd, char * buffer) {
 	unsigned char frame[MAX_FRAME_SIZE];
-	unsigned char destuffed_frame[MAX_FRAME_SIZE];
+	unsigned char destuffedFrame[MAX_FRAME_SIZE];
 	
 	//Read frame
 	int frame_size = receiveFrame(fd,frame);
