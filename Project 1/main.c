@@ -19,7 +19,7 @@ int main(int argc, char** argv)
 	
 	configLinkLayer(port, BAUDRATE, 3, 5);
 	
-	if(argv[1] == "T"){
+	if(argv[1][0] == 'T'){
 		llopen(0, TRANSMITTER);
 	}
 	else

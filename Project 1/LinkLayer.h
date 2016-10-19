@@ -40,7 +40,7 @@ typedef struct LinkLayers {
     char frame[MAX_FRAME_SIZE]; /*Trama*/
 } LinkLayer;
 
-LinkLayer* linkLayer;
+LinkLayer linkLayer;
 
 void configLinkLayer(char* port, int baudRate, unsigned int timeout, unsigned int numTransmissions);
 
