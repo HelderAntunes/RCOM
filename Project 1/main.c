@@ -22,8 +22,21 @@ int main(int argc, char** argv)
 	if(argv[1][0] == 'T'){
 		llopen(0, TRANSMITTER);
 	}
-	else
-		llopen(0, RECEIVER);    
+	else{
+		int fd = llopen(0, RECEIVER); 
+
+		int j;
+		
+		for(j = 0; j < 5; j++){
+			unsigned char buffer[100];
+			int size = llread (fd, buffer); 
+			int i;
+
+			for(i = 0; i < size; i++){
+				printf("buffer %02x\n", buffer[i]);
+			}
+		}
+	}   
 
     return 0;
 }

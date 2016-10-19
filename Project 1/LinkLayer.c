@@ -30,7 +30,7 @@ void configLinkLayer(char* port, int baudRate, unsigned int timeout, unsigned in
 
 int llopen (int porta, int flagMode) {
 
-	int fd = open("/dev/ttyS0", O_RDWR | O_NOCTTY );
+	int fd = open("/dev/ttyS0", O_RDWR | O_NOCTTY | O_NONBLOCK);
     if (fd <0) {perror("/dev/ttyS0"); exit(-1); }
 
     tcgetattr(fd,&oldtio); /* save current port settings */
@@ -70,8 +70,8 @@ int llopen (int porta, int flagMode) {
 }
 
 void atende()                   // atende alarme
-{
-    printf("Try number: %d\n", conta);
+{    
+	printf("Try number: %d\n", conta);
     isToSendMessage = TRUE;
     conta++;
 }
@@ -102,12 +102,14 @@ int tryConnectInModeTransmitter(int fd) {
 
 int tryConnectInModeReceiver(int fd) {
 	char frame[255];
-	if (readSupervisonOrNonNumeratedFrame(fd, frame) == PASS_IN_STATE_MACHINE){
+
+	while(readSupervisonOrNonNumeratedFrame(fd, frame) != PASS_IN_STATE_MACHINE){};
+	//if (readSupervisonOrNonNumeratedFrame(fd, frame) == PASS_IN_STATE_MACHINE){
 		if(frame[2] == C_SET) //Received SET message
 			sendFrame(fd, A_SENDER, C_UA); // Answer with UA message
-	}
-	else
-		return -1;
+	//}
+	//else
+		//return -1;
 }
 
 void sendSET(int fd) {
@@ -267,13 +269,16 @@ int readSupervisonOrNonNumeratedFrame (int fd, char * frame) {
         char c;
         if (state < 5) {
             int r = read(fd, &c, 1);
-            printf("%d 0x%x02\n", r, c);
+            
             if (r == -1) {
                 return -1;
             }
             else if (r == 0 && isToSendMessage == 1) {  // quando o alarme dispara isToSendMessage fica a 1
                 return -1;
             }
+				else{
+					printf("%d 0x%x02\n", r, c);
+				}
         }
 
         switch (state) {
@@ -340,8 +345,11 @@ int receiveFrame(int fd, unsigned char* frame){
 	unsigned char c;
 	
 	while(receiving){
-		read(fd, &c, 1);
-		printf("0x%02x ", c);
+		int r = read(fd, &c, 1);
+		if(r == -1)
+			continue;
+
+		printf("receive frame: 0x%02x \n", c);
 		
 		switch(state){
 		case 0:
@@ -433,18 +441,32 @@ int llread (int fd, char * buffer) {
 
 	if(frame_size == 5){
 		if(frame[2] == C_SET){ //Received SET frame
-			sendFrame(fd, A_SENDER, C_UA);
+			//sendFrame(fd, A_SENDER, C_UA);
 			return 0;
 		}
 	}
+
+	int i;
+	printf("frame ");
+	for(i = 0; i < frame_size; i++){
+		printf("%02x ", frame[i]);
+	}
+	printf("\n");
 	
 	//Destuff frame
 	int destuffedSize = destuffFrame(frame, frame_size, destuffedFrame);
+
+	printf("destuffed frame ");
+	for(i = 0; i < destuffedSize; i++){
+		printf("%02x ", destuffedFrame[i]);
+	}
+	printf("\n");
 	
 	int dataSize = destuffedSize - 6; //6 bytes are used in prefix and posfix
 	
 	//Check errors
 	unsigned char BCC2 = calcBCC2(&destuffedFrame[4], dataSize);
+	//unsigned char BCC2 = calcBCC2(&frame[4], frame_size-6);
 	
 	if(destuffedFrame[destuffedSize-2] != BCC2){
 		printf("ERROR in receiveFrame(): BCC2 error\n");
