@@ -1,6 +1,7 @@
 #include "LinkLayer.h"
 
 struct termios oldtio,newtio;
+int mode;
 
 volatile int STOP=FALSE;
 int isToSendMessage=TRUE, conta=1;
@@ -19,6 +20,8 @@ int trySendFrame (int fd, char* frame, int frameLength);
 int constructFrame (char* frame, char* buffer, int length);
 void readConfirmation (int fd);
 int receiveFrame(int fd, unsigned char* frame);
+int tryDisconnectInModeTransmitter (int fd);
+int tryDisconnectInModeReceiver (int fd);
 
 void configLinkLayer(char* port, int baudRate, unsigned int timeout, unsigned int numTransmissions) {
     strcpy(linkLayer.port, port);
@@ -29,6 +32,7 @@ void configLinkLayer(char* port, int baudRate, unsigned int timeout, unsigned in
 }
 
 int llopen (int porta, int flagMode) {
+	mode = flagMode;
 
 	int fd = open("/dev/ttyS0", O_RDWR | O_NOCTTY | O_NONBLOCK);
     if (fd <0) {perror("/dev/ttyS0"); exit(-1); }
@@ -51,11 +55,11 @@ int llopen (int porta, int flagMode) {
 
     (void) signal(SIGALRM, atende);
 
-    if (flagMode == TRANSMITTER) {
+    if (mode == TRANSMITTER) {
     	if (tryConnectInModeTransmitter(fd) == -1)
             return -1;
     }
-    else if (flagMode == RECEIVER) {
+    else if (mode == RECEIVER) {
     	if (tryConnectInModeReceiver(fd) == -1)
             return -1;
     }
@@ -88,7 +92,6 @@ int tryConnectInModeTransmitter(int fd) {
             if (readSupervisonOrNonNumeratedFrame(fd, UA) == PASS_IN_STATE_MACHINE){
                 STOP = TRUE;
             }
-            printf("Hey\n");
         }
     }
 
@@ -487,6 +490,65 @@ int llread (int fd, char * buffer) {
 	return 0;	
 }
 
+int tryDisconnectInModeTransmitter (int fd){
+	STOP = FALSE;
+    conta = 1;
+    isToSendMessage = TRUE;
+
+    while (conta <= linkLayer.numTransmissions && !STOP) {
+        if (isToSendMessage) {
+            sendFrame(fd, A_SENDER, C_DISC);
+            alarm(linkLayer.timeout);
+            isToSendMessage = FALSE;
+            char DISC[255];
+            if (readSupervisonOrNonNumeratedFrame(fd, DISC) == PASS_IN_STATE_MACHINE){
+                STOP = TRUE;
+				sendFrame(fd, A_SENDER, C_UA);
+            }
+        }
+    }
+
+    if (STOP == TRUE) {
+        return 0;
+    } else {
+        return -1;
+    }
+}
+
+int tryDisconnectInModeReceiver (int fd){
+	char frame[255];
+	if (readSupervisonOrNonNumeratedFrame(fd, frame) == PASS_IN_STATE_MACHINE){
+		if(frame[2] == C_DISC){ //Received DISC message
+			sendFrame(fd, A_RECEIVER, C_DISC); // Answer with DISC message
+			
+			if (readSupervisonOrNonNumeratedFrame(fd, frame) == PASS_IN_STATE_MACHINE){ //Wait for UA
+				if(frame[2] == C_UA)
+					return 0;
+			}				
+		}
+	}
+	else
+		return -1;
+}
+
 int llclose (int fd) {
-    return -1;
+	
+	//Comunicate disconnection
+	if (mode == TRANSMITTER) {
+    	if (tryDisconnectInModeTransmitter(fd) == -1)
+            return -1;
+    }
+    else if (mode == RECEIVER) {
+    	if (tryDisconnectInModeReceiver(fd) == -1)
+            return -1;
+    }
+    else {
+        return -1;
+    }
+	
+	//Close File
+	tcsetattr(fd,TCSANOW,&oldtio);
+    close(fd);
+	
+	return 1;
 }
