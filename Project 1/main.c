@@ -46,21 +46,31 @@ int main(int argc, char** argv)
 		r = llwrite (fd, buffer, 5);
 
 		printf("%d bytes written\n", r);
+
+		llclose(fd);
 	}
 	else{
 		int fd = llopen(0, RECEIVER); 
 
 		int j;
 		
-		for(j = 0; j < 5; j++){
+		for(j = 0; j < 2; j++){
 			unsigned char buffer[100];
 			int size = llread (fd, buffer); 
 			int i;
 
-			for(i = 0; i < size; i++){
-				printf("buffer %02x\n", buffer[i]);
+			if(size != 0){
+				printf("buffer %d: ", j);
+				for(i = 0; i < size; i++){
+					printf("%02x ", buffer[i]);
+				}
+				printf("\n");
 			}
 		}
+		
+		sleep(10);
+
+		llclose(fd);
 	}   
 
     return 0;
