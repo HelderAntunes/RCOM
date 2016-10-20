@@ -1,6 +1,7 @@
-﻿#include "LinkLayer.h"
+#include "LinkLayer.h"
 
 struct termios oldtio,newtio;
+int mode;
 
 volatile int STOP=FALSE;
 int isToSendMessage=TRUE, conta=1;
@@ -19,6 +20,8 @@ int trySendFrame (int fd, char* frame, int frameLength);
 int constructFrame (char* frame, char* buffer, int length);
 void readConfirmation (int fd);
 int receiveFrame(int fd, unsigned char* frame);
+int tryDisconnectInModeTransmitter (int fd);
+int tryDisconnectInModeReceiver (int fd);
 
 void configLinkLayer(char* port, int baudRate, unsigned int timeout, unsigned int numTransmissions) {
     strcpy(linkLayer.port, port);
@@ -29,6 +32,7 @@ void configLinkLayer(char* port, int baudRate, unsigned int timeout, unsigned in
 }
 
 int llopen (int porta, int flagMode) {
+	mode = flagMode;
 
 	int fd = open("/dev/ttyS0", O_RDWR | O_NOCTTY | O_NONBLOCK);
     if (fd <0) {perror("/dev/ttyS0"); exit(-1); }
@@ -51,11 +55,11 @@ int llopen (int porta, int flagMode) {
 
     (void) signal(SIGALRM, atende);
 
-    if (flagMode == TRANSMITTER) {
+    if (mode == TRANSMITTER) {
     	if (tryConnectInModeTransmitter(fd) == -1)
             return -1;
     }
-    else if (flagMode == RECEIVER) {
+    else if (mode == RECEIVER) {
     	if (tryConnectInModeReceiver(fd) == -1)
             return -1;
     }
@@ -83,10 +87,11 @@ int tryConnectInModeTransmitter(int fd) {
         if (isToSendMessage) {
             sendSET(fd);
             alarm(linkLayer.timeout);
-            isToSendMessage = 0;
+            isToSendMessage = FALSE;
             char UA[255];
-            if (readSupervisonOrNonNumeratedFrame(fd, UA) == PASS_IN_STATE_MACHINE)
+            if (readSupervisonOrNonNumeratedFrame(fd, UA) == PASS_IN_STATE_MACHINE){
                 STOP = TRUE;
+            }
         }
     }
 
@@ -111,6 +116,9 @@ void sendSET(int fd) {
 
 int tryConnectInModeReceiver(int fd) {
 	char frame[255];
+	
+	isToSendMessage = FALSE;
+	
 	if (readSupervisonOrNonNumeratedFrame(fd, frame) == PASS_IN_STATE_MACHINE){
 		if(frame[2] == C_SET) //Received SET message
 			sendFrame(fd, A_SENDER, C_UA); // Answer with UA message
@@ -129,7 +137,7 @@ int sendFrame(int fd, unsigned char a, unsigned char c){
 	frame[4] = F;
 
 	int w = write(fd, frame, 5);
-	printf("%d bytes written\n", w);
+	//printf("sendFrame: %d bytes written\n", w);
 
 	if(w != 5){
 		printf("ERROR in sendFrame(): could not send frame\n");
@@ -161,9 +169,11 @@ int llwrite (int fd, char * buffer, int length) {
 int constructFrame (char* frame, char* buffer, int length) {
 
     // stuffing buffer
-    int numEscapeCharRequired = getNumOfEscapeCharactersRequired(buffer, length);
-    char* bufferStuffed = (char*) malloc(length + numEscapeCharRequired);
-    makeBufferStuffed(bufferStuffed, buffer, length);
+    char BCC2 = calcBCC2(buffer, length);
+    buffer[length] = BCC2;
+    int numEscapeCharRequired = getNumOfEscapeCharactersRequired(buffer, length + 1);
+    char* bufferStuffed = (char*) malloc(length + 1 + numEscapeCharRequired);
+    makeBufferStuffed(bufferStuffed, buffer, length + 1);
 
     // calcula tamanho da frame
     int sizeOfHeaderAndTrailer = 6; // F, A, C, BCC1, BCC2 e F
@@ -174,9 +184,8 @@ int constructFrame (char* frame, char* buffer, int length) {
     frame[1] = A_SENDER;
     frame[2] = (linkLayer.sequenceNumber << 6); // Campo de Controlo = 0 S 0 0 0 0 0 0 , em que S = N(s) = 0 ou 1 (ver slide 7 do guião)
     frame[3] = frame[1] ^ frame[2]; // BCC1
-    memcpy(&frame[4], bufferStuffed, length + numEscapeCharRequired);
-    char BCC2 = calcBCC2(buffer, length);
-    frame[frameLength-2] = BCC2;
+    memcpy(&frame[4], bufferStuffed, length + 1 + numEscapeCharRequired);
+
     frame[frameLength-1] = F;
 
     return frameLength;
@@ -218,6 +227,7 @@ int trySendFrame (int fd, char* frame, int frameLength) {
     if(isToSendMessage){
         write(fd, frame, frameLength);
         alarm(linkLayer.timeout);
+        isToSendMessage = FALSE;
 		readConfirmation(fd);
     }
     return 0;
@@ -257,12 +267,16 @@ int readSupervisonOrNonNumeratedFrame (int fd, char * frame) {
         char c;
         if (state < 5) {
             int r = read(fd, &c, 1);
-            printf("%d 0x%x02\n", r, c);
+
+            if(isToSendMessage == TRUE && r == -1){ // quando o alarme dispara isToSendMessage fica TRUE e sai desta função
+            	return -1;
+            }
+           
             if (r == -1) {
                 continue;// ignorar erro(E_AGAIN) devido a NON_BLOCK
             }
-            else if (r == 0 && isToSendMessage == 1) {  // quando o alarme dispara isToSendMessage fica a 1
-                return -1;
+            else{
+            	//printf("readSupervisonOrNonNumeratedFrame: %d 0x%02x\n", r, c);
             }
         }
 
@@ -326,15 +340,14 @@ int receiveFrame(int fd, unsigned char* frame){
 	int i = 0;
 	int state = 0;
 	int receiving = TRUE;
-
+	
 	unsigned char c;
-
+	
 	while(receiving){
-		read(fd, &c, 1);
-		if (r == -1) {
-			continue;// ignorar erro(E_AGAIN) devido a NON_BLOCK
-		}
-
+		int r = read(fd, &c, 1);
+		if(r == -1)
+			continue; // ignorar erro(E_AGAIN) devido a NON_BLOCK
+		
 		switch(state){
 		case 0:
 			if(c == F){
@@ -399,7 +412,7 @@ int receiveFrame(int fd, unsigned char* frame){
 }
 
 int destuffFrame(unsigned char* frame, int frameSize, unsigned char* destuffedFrame){
-
+	
 	int i;
 	int j = 0;
 	for (i = 0; i < frameSize; i++, j++) {
@@ -408,7 +421,7 @@ int destuffFrame(unsigned char* frame, int frameSize, unsigned char* destuffedFr
 		else
 			destuffedFrame[j] = frame[i];
 	}
-
+	
 	return j;
 }
 
@@ -416,7 +429,7 @@ int destuffFrame(unsigned char* frame, int frameSize, unsigned char* destuffedFr
 int llread (int fd, char * buffer) {
 	unsigned char frame[MAX_FRAME_SIZE];
 	unsigned char destuffedFrame[MAX_FRAME_SIZE];
-
+	
 	//Read frame
 	int frame_size = receiveFrame(fd,frame);
 	if(frame_size == -1 || frame_size < 5){
@@ -425,19 +438,19 @@ int llread (int fd, char * buffer) {
 
 	if(frame_size == 5){
 		if(frame[2] == C_SET){ //Received SET frame
-			sendFrame(fd, A_SENDER, C_UA);
+			//sendFrame(fd, A_SENDER, C_UA);
 			return 0;
 		}
 	}
-
+	
 	//Destuff frame
 	int destuffedSize = destuffFrame(frame, frame_size, destuffedFrame);
-
+	
 	int dataSize = destuffedSize - 6; //6 bytes are used in prefix and posfix
-
+	
 	//Check errors
 	unsigned char BCC2 = calcBCC2(&destuffedFrame[4], dataSize);
-
+	
 	if(destuffedFrame[destuffedSize-2] != BCC2){
 		printf("ERROR in receiveFrame(): BCC2 error\n");
 		//Send Reject
@@ -451,18 +464,21 @@ int llread (int fd, char * buffer) {
 		}
 	}
 	else{
-		//Send ReceiverReady
+		//Get frame's sequence number
+		unsigned int  seq = destuffedFrame[2] >> 7;
 
-		if(destuffedFrame[2] >> 6 == 0){
+		//Send ReceiverReady
+		
+		if(seq == 0){
 			int C_RR1 = (1 << 7) | C_RR;
 			sendFrame(fd, A_SENDER, C_RR1);
 		}
-		else if(destuffedFrame[2] >> 6 == 1){
+		else if(seq == 1){
 			int C_RR0 = (0 << 7) | C_RR;
 			sendFrame(fd, A_SENDER, C_RR0);
 		}
 
-		if(destuffedFrame[2] >> 6 == linkLayer.sequenceNumber){
+		if(seq == linkLayer.sequenceNumber){
 			//Update frame number to be received
 			if(linkLayer.sequenceNumber == 1)
 				linkLayer.sequenceNumber = 0;
@@ -470,14 +486,73 @@ int llread (int fd, char * buffer) {
 				linkLayer.sequenceNumber = 1;
 			//Fill buffer with data
 			memcpy(buffer,&destuffedFrame[4],dataSize);
-
+	
 			return dataSize;
-		}
+		}	
 	}
 
-	return 0;
+	return 0;	
+}
+
+int tryDisconnectInModeTransmitter (int fd){
+	STOP = FALSE;
+    conta = 1;
+    isToSendMessage = TRUE;
+
+    while (conta <= linkLayer.numTransmissions && !STOP) {
+        if (isToSendMessage) {
+            sendFrame(fd, A_SENDER, C_DISC);
+            alarm(linkLayer.timeout);
+            isToSendMessage = FALSE;
+            char DISC[255];
+            if (readSupervisonOrNonNumeratedFrame(fd, DISC) == PASS_IN_STATE_MACHINE){
+                STOP = TRUE;
+				sendFrame(fd, A_SENDER, C_UA);
+            }
+        }
+    }
+
+    if (STOP == TRUE) {
+        return 0;
+    } else {
+        return -1;
+    }
+}
+
+int tryDisconnectInModeReceiver (int fd){
+	char frame[255];
+	if (readSupervisonOrNonNumeratedFrame(fd, frame) == PASS_IN_STATE_MACHINE){
+		if(frame[2] == C_DISC){ //Received DISC message
+			sendFrame(fd, A_RECEIVER, C_DISC); // Answer with DISC message
+			
+			if (readSupervisonOrNonNumeratedFrame(fd, frame) == PASS_IN_STATE_MACHINE){ //Wait for UA
+				if(frame[2] == C_UA)
+					return 0;
+			}				
+		}
+	}
+	else
+		return -1;
 }
 
 int llclose (int fd) {
-    return -1;
+	
+	//Comunicate disconnection
+	if (mode == TRANSMITTER) {
+    	if (tryDisconnectInModeTransmitter(fd) == -1)
+            return -1;
+    }
+    else if (mode == RECEIVER) {
+    	if (tryDisconnectInModeReceiver(fd) == -1)
+            return -1;
+    }
+    else {
+        return -1;
+    }
+	
+	//Close File
+	tcsetattr(fd,TCSANOW,&oldtio);
+    close(fd);
+	
+	return 1;
 }
