@@ -339,6 +339,7 @@ int receiveFrame(int fd, unsigned char* frame){
 	while(receiving){
 		int r = read(fd, &c, 1);
 		if(r == -1)
+			continue; // ignorar erro(E_AGAIN) devido a NON_BLOCK
 		
 		switch(state){
 		case 0:
@@ -402,9 +403,9 @@ int receiveFrame(int fd, unsigned char* frame){
 	}
 	return i;
 }
-	
-int destuffFrame(unsigned char* frame, int frameSize, unsigned char* destuffedFrame){
 
+int destuffFrame(unsigned char* frame, int frameSize, unsigned char* destuffedFrame){
+	
 	int i;
 	int j = 0;
 	for (i = 0; i < frameSize; i++, j++) {
