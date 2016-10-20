@@ -333,15 +333,13 @@ int receiveFrame(int fd, unsigned char* frame){
 	int i = 0;
 	int state = 0;
 	int receiving = TRUE;
-
+	
 	unsigned char c;
-
+	
 	while(receiving){
 		int r = read(fd, &c, 1);
-		if (r == -1) {
-			continue;// ignorar erro(E_AGAIN) devido a NON_BLOCK
-		}
-
+		if(r == -1)
+		
 		switch(state){
 		case 0:
 			if(c == F){
@@ -404,7 +402,7 @@ int receiveFrame(int fd, unsigned char* frame){
 	}
 	return i;
 }
-
+	
 int destuffFrame(unsigned char* frame, int frameSize, unsigned char* destuffedFrame){
 
 	int i;
@@ -415,7 +413,7 @@ int destuffFrame(unsigned char* frame, int frameSize, unsigned char* destuffedFr
 		else
 			destuffedFrame[j] = frame[i];
 	}
-
+	
 	return j;
 }
 
@@ -423,7 +421,7 @@ int destuffFrame(unsigned char* frame, int frameSize, unsigned char* destuffedFr
 int llread (int fd, char * buffer) {
 	unsigned char frame[MAX_FRAME_SIZE];
 	unsigned char destuffedFrame[MAX_FRAME_SIZE];
-
+	
 	//Read frame
 	int frame_size = receiveFrame(fd,frame);
 	if(frame_size == -1 || frame_size < 5){
@@ -432,19 +430,19 @@ int llread (int fd, char * buffer) {
 
 	if(frame_size == 5){
 		if(frame[2] == C_SET){ //Received SET frame
-			sendFrame(fd, A_SENDER, C_UA);
+			//sendFrame(fd, A_SENDER, C_UA);
 			return 0;
 		}
 	}
-
+	
 	//Destuff frame
 	int destuffedSize = destuffFrame(frame, frame_size, destuffedFrame);
-
+	
 	int dataSize = destuffedSize - 6; //6 bytes are used in prefix and posfix
-
+	
 	//Check errors
 	unsigned char BCC2 = calcBCC2(&destuffedFrame[4], dataSize);
-
+	
 	if(destuffedFrame[destuffedSize-2] != BCC2){
 		printf("ERROR in receiveFrame(): BCC2 error\n");
 		//Send Reject
@@ -458,18 +456,21 @@ int llread (int fd, char * buffer) {
 		}
 	}
 	else{
-		//Send ReceiverReady
+		//Get frame's sequence number
+		unsigned int  seq = destuffedFrame[2] >> 7;
 
-		if(destuffedFrame[2] >> 6 == 0){
+		//Send ReceiverReady
+		
+		if(seq == 0){
 			int C_RR1 = (1 << 7) | C_RR;
 			sendFrame(fd, A_SENDER, C_RR1);
 		}
-		else if(destuffedFrame[2] >> 6 == 1){
+		else if(seq == 1){
 			int C_RR0 = (0 << 7) | C_RR;
 			sendFrame(fd, A_SENDER, C_RR0);
 		}
 
-		if(destuffedFrame[2] >> 6 == linkLayer.sequenceNumber){
+		if(seq == linkLayer.sequenceNumber){
 			//Update frame number to be received
 			if(linkLayer.sequenceNumber == 1)
 				linkLayer.sequenceNumber = 0;
@@ -477,12 +478,12 @@ int llread (int fd, char * buffer) {
 				linkLayer.sequenceNumber = 1;
 			//Fill buffer with data
 			memcpy(buffer,&destuffedFrame[4],dataSize);
-
+	
 			return dataSize;
-		}
+		}	
 	}
 
-	return 0;
+	return 0;	
 }
 
 int llclose (int fd) {
