@@ -4,12 +4,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include "LinkLayer.h"
-
-typedef struct ApplicationLayers {
-    int fileDescriptor;
-    int mode; /* TRANSMITTER | RECEIVER */
-} ApplicationLayer;
-
+#include "ApplicationLayer.h"
 
 int main(int argc, char** argv)
 {

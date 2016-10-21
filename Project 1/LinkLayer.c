@@ -34,8 +34,8 @@ void configLinkLayer(char* port, int baudRate, unsigned int timeout, unsigned in
 int llopen (int porta, int flagMode) {
 	mode = flagMode;
 
-	int fd = open("/dev/ttyS0", O_RDWR | O_NOCTTY | O_NONBLOCK);
-    if (fd <0) {perror("/dev/ttyS0"); exit(-1); }
+	int fd = open(linkLayer.port, O_RDWR | O_NOCTTY | O_NONBLOCK);
+    if (fd <0) {perror(linkLayer.port); exit(-1); }
 
     tcgetattr(fd,&oldtio); /* save current port settings */
 
