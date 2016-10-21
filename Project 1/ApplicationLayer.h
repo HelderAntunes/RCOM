@@ -13,6 +13,7 @@ typedef struct {
 	int fd;
 	int mode;
 	FILE * file;
+	int pktSize;
 } ApplicationLayer;
 
 ApplicationLayer al;
@@ -44,11 +45,12 @@ int sendData(char * filePath, int fileSize);
 /*
 arguments:
 - filePath: path to file
+- fileSize: size of file in chars
 returns:
 0 if successful
 -1 otherwise
 */
-int receiveData(char * filePath);
+int receiveData(char * filePath, int fileSize);
 
 /*
 arguments:

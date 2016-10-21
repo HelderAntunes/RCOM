@@ -6,12 +6,6 @@
 #include "LinkLayer.h"
 #include "ApplicationLayer.h"
 
-typedef struct ApplicationLayers {
-    int fileDescriptor;
-    int mode; /* TRANSMITTER | RECEIVER */
-} ApplicationLayer;
-
-
 int main(int argc, char** argv)
 {
     printf("fdfsf\n");

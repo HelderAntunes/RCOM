@@ -1,13 +1,17 @@
 #include "LinkLayer.h"
 #include "ApplicationLayer.h"
+#include <stdio.h>
+#include <string.h>
+
+FILE * openFile(char * filePath);
 
 int initAppLayer(char * port, int mode, char * filePath, int timeout, int retries, int pktSize, int baudrate){
 	configLinkLayer(port, baudrate, timeout, retries);
 	
-	al.fd = llopen(port, mode);
+	al.fd = llopen(0, mode);
 	
 	if(al.fd == -1){
-		return -1
+		return -1;
 	}
 	
 	al.mode = mode;
@@ -64,9 +68,9 @@ FILE * openFile(char * filePath) {
 	
 	FILE * file;
 	
-	if(al->status == TRANSMITTER) 
+	if(al.mode == TRANSMITTER) 
 		file = fopen(filePath, "rb"); //Read in binary mode
-	else if(al->status == RECEIVER)
+	else if(al.mode == RECEIVER)
 		file = fopen(filePath, "wb");
 		
 	if(file == NULL) {
@@ -85,9 +89,9 @@ int sendData(char * filePath, int fileSize){
 	int sequenceNumber = 0;
 	int bytesAcumulator = 0;
 	
-	char buffer = malloc(ll->pktSize * sizeof(char));
+	char* buffer = malloc(al.pktSize * sizeof(char));
 
-	while((bytesRead = fread(buffer, sizeof(char), ll->pktSize, al->file)) > 0){
+	while((bytesRead = fread(buffer, sizeof(char), al.pktSize, al.file)) > 0){
 		if(sendDataPkt(buffer, bytesRead, sequenceNumber) < 0)
 			return -1;
 
@@ -95,8 +99,8 @@ int sendData(char * filePath, int fileSize){
 		sequenceNumber % 255;
 	}
 
-	if (fclose(al->file) < 0) {
-		peror("sendData()");
+	if (fclose(al.file) < 0) {
+		perror("sendData()");
 		return -1;
 	}
 
@@ -113,22 +117,22 @@ int receiveData(char * filePath, int fileSize){
 	int bytesRead;
 	int bytesAcumulator = 0;
 	int sequenceNumber = 0;
-	unsigned char * buffer = malloc(ll->pktSize * sizeof(char));
+	unsigned char * buffer = malloc(al.pktSize * sizeof(char));
 
 	while (bytesAcumulator < fileSize){
-		bytesRead = receiveDataPkt(&buffer, sequenceNumber);
+		bytesRead = receiveDataPkt(buffer, sequenceNumber);
 		
 		if(bytesRead < 0)
 			return -1;
 		
 		bytesAcumulator += bytesRead;
-		fwrite(buffer, sizeof(char), bytesRead, al->file);
+		fwrite(buffer, sizeof(char), bytesRead, al.file);
 		
 		sequenceNumber++;
 		sequenceNumber % 255;
 	}
 
-	if (fclose(al->file) < 0) {
+	if (fclose(al.file) < 0) {
 		perror("receiveData()");
 		return -1;
 	}
@@ -185,7 +189,7 @@ int receiveCtrlPkt(int ctrlField, int * fileSize, char * filePath){
 		return -1;
 	}
 	
-	if ((info[0] - '0') != controlField) {
+	if ((info[0] - '0') != ctrlField) {
 		printf("ERROR in receiveCtrlPkt(): unexpected control field!\n");
 		return -1;
 	}
@@ -212,7 +216,7 @@ int receiveCtrlPkt(int ctrlField, int * fileSize, char * filePath){
 
 	if((info[acumulator] - '0') != FILE_NAME) {
 		printf("ERROR in receiveCtrlPkt(): unexpected name param!\n");
-		return ERROR;
+		return -1;
 	}
 
 	acumulator++;
@@ -220,7 +224,7 @@ int receiveCtrlPkt(int ctrlField, int * fileSize, char * filePath){
 	int pathLength = (info[acumulator] - '0');
 	acumulator++;
 
-	char pathStr[MAX_STR_SIZE];
+	char pathStr[MAX_PKT_SIZE];
 	
 	for(i = 0; i < pathLength; i++) {
 		pathStr[i] = info[acumulator];
@@ -228,7 +232,7 @@ int receiveCtrlPkt(int ctrlField, int * fileSize, char * filePath){
 	}
 
 	pathStr[pathLength] = '\0';
-	strcpy((*filePath), pathStr);
+	strcpy(filePath, pathStr);
 
 	return 0;
 }
@@ -237,14 +241,14 @@ int sendDataPkt(char * buffer, int bytesRead, int sequenceNumber){
 	int size = bytesRead + 4;
 	unsigned char dataPckg[size];
 
-	dataPckg[0] = CTRL_PKT_DATA + '0';
+	dataPckg[0] = C_DATA + '0';
 	dataPckg[1] = sequenceNumber + '0';
 
 	dataPckg[2] = bytesRead / 256;
 	dataPckg[3] = bytesRead % 256;
 	memcpy(&dataPckg[4], buffer, bytesRead);
 
-	if (llwrite(al->fd, dataPckg, size) < 0) {
+	if (llwrite(al.fd, dataPckg, size) < 0) {
 		printf("ERROR in sendDataPkt(): llwrite() function error!\n");
 		return -1;
 	}
@@ -268,7 +272,7 @@ int receiveDataPkt(unsigned char * buffer,int sequenceNumber){
 	int N = info[1] - '0';
 
 	if (C != C_DATA) {
-		printf("ERROR in receiveDataPkt(): control field it's different from CTRL_PKT_DATA!\n");
+		printf("ERROR in receiveDataPkt(): control field it's different from C_DATA!\n");
 		return -1;
 	}
 	
@@ -281,7 +285,7 @@ int receiveDataPkt(unsigned char * buffer,int sequenceNumber){
 	int L1 = info[3];
 	int pktSize = 256 * L2 + L1;
 
-	memcpy((*buffer), &info[4], pktSize);
+	memcpy(buffer, &info[4], pktSize);
 
 	return pktSize;
 }
