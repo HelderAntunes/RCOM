@@ -20,7 +20,8 @@ int main(int argc, char** argv)
 		}
 	}
 	else{
-		if (initAppLayer(port, RECEIVER, "./pinguim.gif", 3, 5, 200, 38000) == -1) {
+		char filePath[500];
+		if (initAppLayer(port, RECEIVER, port, 3, 5, 200, 38000) == -1) {
 			printf("Error on initAppLayer()\n");
 			return -1;
 		}

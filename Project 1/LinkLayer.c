@@ -234,7 +234,7 @@ int trySendFrame (int fd, char* frame, int frameLength) {
 }
 
 void readConfirmation (int fd) {
-    char confirmation[255];
+    unsigned char confirmation[255];
 
     if (readSupervisonOrNonNumeratedFrame(fd, confirmation) == PASS_IN_STATE_MACHINE) {
 
@@ -458,14 +458,14 @@ int llread (int fd, char * buffer) {
 			int C_REJ0 = (0 << 7) | C_REJ;
 			sendFrame(fd, A_SENDER, C_REJ0);
 		}
-		else if(destuffedFrame[2]  >> 1 == 1){
+		else if(destuffedFrame[2]  >> 6 == 1){
 			int C_REJ1 = (1 << 7) | C_REJ;
 			sendFrame(fd, A_SENDER, C_REJ1);
 		}
 	}
 	else{
 		//Get frame's sequence number
-		unsigned int  seq = destuffedFrame[2] >> 7;
+		unsigned int  seq = destuffedFrame[2] >> 6;
 
 		//Send ReceiverReady
 		
