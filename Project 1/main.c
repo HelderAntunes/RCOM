@@ -21,7 +21,7 @@ int main(int argc, char** argv)
 	}
 	else{
 		char filePath[500];
-		if (initAppLayer(port, RECEIVER, port, 3, 5, 200, 38000) == -1) {
+		if (initAppLayer(port, RECEIVER, filePath, 3, 5, 200, 38000) == -1) {
 			printf("Error on initAppLayer()\n");
 			return -1;
 		}

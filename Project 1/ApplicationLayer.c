@@ -193,7 +193,8 @@ int receiveData(char * filePath, int fileSize){
 		bytesAcumulator += bytesRead;
 		fwrite(buffer, sizeof(char), bytesRead, al.file);
 		
-		sequenceNumber = (sequenceNumber + 1) % 255;
+		if(bytesRead > 0)
+			sequenceNumber = (sequenceNumber + 1) % 255;
 	}
 
 	printf("File received!\n");
@@ -273,7 +274,7 @@ int receiveDataPkt(unsigned char * buffer,int sequenceNumber){
 	}
 	
 	if (N != sequenceNumber) {
-		printf("ERROR in receiveDataPkt(): sequence number it's wrong!\n");
+		printf("ERROR in receiveDataPkt(): sequence number it's wrong! %d != %d\n", N, sequenceNumber);
 		return -1;
 	}
 

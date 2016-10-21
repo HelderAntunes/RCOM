@@ -452,14 +452,14 @@ int llread (int fd, char * buffer) {
 	unsigned char BCC2 = calcBCC2(&destuffedFrame[4], dataSize);
 	
 	if(destuffedFrame[destuffedSize-2] != BCC2){
-		printf("ERROR in receiveFrame(): BCC2 error\n");
+		printf("ERROR in llread(): BCC2 error\n");
 		//Send Reject
 		if(destuffedFrame[2] >> 6 == 0){
-			int C_REJ0 = (0 << 7) | C_REJ;
+			unsigned char C_REJ0 = (0 << 7) | C_REJ;
 			sendFrame(fd, A_SENDER, C_REJ0);
 		}
 		else if(destuffedFrame[2]  >> 6 == 1){
-			int C_REJ1 = (1 << 7) | C_REJ;
+			unsigned char C_REJ1 = (1 << 7) | C_REJ;
 			sendFrame(fd, A_SENDER, C_REJ1);
 		}
 	}
