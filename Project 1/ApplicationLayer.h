@@ -1,13 +1,13 @@
 #pragma once
 
-#define C_DATA 1
-#define C_START 2
-#define C_END 3
+#define C_DATA 0x01
+#define C_START 0x02
+#define C_END 0x03
 
-#define FILE_SIZE 0
-#define FILE_NAME 1
+#define FILE_SIZE 0x00
+#define FILE_NAME 0x01
 
-#define MAX_PKT_SIZE 100
+#define MAX_PKT_SIZE 500
 
 typedef struct {
 	int fd;
@@ -62,6 +62,7 @@ returns:
 -1 otherwise
 */
 int sendCtrlPkt(int ctrlField, char * filePath, int fileSize);
+
 /*
 arguments:
 - ctrlField: value of first byte of packet
@@ -71,7 +72,7 @@ returns:
 0 if successful
 -1 otherwise
 */
-int receivecvCtrlPkt(int ctrlField, int * fileSize, char * filePath);
+int receiveCtrlPkt(int ctrlField, int * fileSize, char * filePath);
 
 /*
 arguments:
@@ -83,6 +84,7 @@ returns:
 -1 otherwise
 */
 int sendDataPkt(char * buffer, int bytesRead, int sequenceNumber);
+
 /*
 arguments:
 - buffer: data received
@@ -92,3 +94,4 @@ returns:
 -1 otherwise
 */
 int receiveDataPkt(unsigned char * buffer,int sequenceNumber);
+

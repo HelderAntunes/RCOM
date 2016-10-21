@@ -4,6 +4,8 @@
 #include <string.h>
 
 FILE * openFile(char * filePath);
+int initAppInModeTransmitter(char* filePath);
+int initAppInModeReceiver(char* filePath);
 
 int initAppLayer(char * port, int mode, char * filePath, int timeout, int retries, int pktSize, int baudrate){
 	configLinkLayer(port, baudrate, timeout, retries);
@@ -18,7 +20,7 @@ int initAppLayer(char * port, int mode, char * filePath, int timeout, int retrie
 	al.pktSize = pktSize;
 	
 	if(mode == TRANSMITTER){
-		initAppInModeTransmitter();
+		initAppInModeTransmitter(filePath);
 	}
 	else if(mode == RECEIVER){
 		initAppInModeReceiver(filePath);
@@ -44,24 +46,18 @@ int initAppInModeTransmitter(char* filePath){
 		return -1;
 	}
 	
-	if(sendData(filePath, fileSize) < 0)
+	if(sendData(filePath, fileSize) < 0) {
+		fclose(al.file);
 		return -1;
+	}
+		
+		
+	if (fclose(al.file) < 0) {
+		perror("Line 56, initAppInModeTransmitter");
+		return -1;
+	}
 	
 	return 0;
-}
-
-int initAppInModeReceiver(char * filePath){
-	int fileSize;
-	
-	if(receiveCtrlPkt(C_START, &fileSize, filePath) < 0)
-		return -1;
-	
-	al.file = openFile(filePath);
-	
-	if(receiveData(filePath, fileSize) < 0)
-		return -1;
-	
-	return 0;	
 }
 
 FILE * openFile(char * filePath) {
@@ -75,7 +71,7 @@ FILE * openFile(char * filePath) {
 		
 	if(file == NULL) {
 		perror("openFile()");
-		return NULL;
+			return NULL;
 	}
 
 	return file;	
@@ -87,7 +83,6 @@ int sendData(char * filePath, int fileSize){
 	
 	int bytesRead = 0;
 	int sequenceNumber = 0;
-	int bytesAcumulator = 0;
 	
 	char* buffer = malloc(al.pktSize * sizeof(char));
 
@@ -95,13 +90,7 @@ int sendData(char * filePath, int fileSize){
 		if(sendDataPkt(buffer, bytesRead, sequenceNumber) < 0)
 			return -1;
 
-		sequenceNumber++;
-		sequenceNumber % 255;
-	}
-
-	if (fclose(al.file) < 0) {
-		perror("sendData()");
-		return -1;
+		sequenceNumber = (sequenceNumber + 1) % 255;
 	}
 
 	if (sendCtrlPkt(C_END, filePath, fileSize) < 0)
@@ -111,6 +100,82 @@ int sendData(char * filePath, int fileSize){
 
 	return 0;
 }
+
+int sendCtrlPkt(int ctrlField, char * filePath, int fileSize){
+	char sizeString[16];
+	sprintf(sizeString, "%d", fileSize);
+
+	int pktSize = 5 + strlen(sizeString) + strlen(filePath); //size of header + trailer is 5
+
+	unsigned char ctrlPckg[pktSize];
+
+	ctrlPckg[0] = ctrlField; // unsigned char corresponding to int
+	
+	ctrlPckg[1] = 0; // T: tamanho do ficheiro
+	ctrlPckg[2] = strlen(sizeString); // L: tamanho em octetos
+
+
+	int i, acumulator = 3;
+	for(i = 0; i < strlen(sizeString); i++) {
+		ctrlPckg[acumulator++] = sizeString[i]; 
+	}
+
+	ctrlPckg[acumulator++] = 1; // T: nome do ficheiro 
+	ctrlPckg[acumulator++] = strlen(filePath); // L: tamanho em octetos
+
+	for(i = 0; i < strlen(filePath); i++) {
+		ctrlPckg[acumulator++] = filePath[i];
+	}
+
+	if (llwrite(al.fd, ctrlPckg, pktSize) < 0) {
+		perror("sendCtrlPkt()");
+		return -1;
+	}
+
+	return 0;
+}
+
+int sendDataPkt(char * buffer, int bytesRead, int sequenceNumber){
+	int size = bytesRead + 4;
+	unsigned char dataPckg[size];
+
+	dataPckg[0] = C_DATA; // C
+	dataPckg[1] = (unsigned char) sequenceNumber; // N
+
+	dataPckg[2] = bytesRead / 256; // L2
+	dataPckg[3] = bytesRead % 256; // L1
+	memcpy(&dataPckg[4], buffer, bytesRead);
+
+	if (llwrite(al.fd, dataPckg, size) < 0) {
+		printf("ERROR in sendDataPkt(): llwrite() function error!\n");
+		return -1;
+	}
+
+	return 0;
+}
+
+int initAppInModeReceiver(char * filePath){
+	int fileSize;
+	
+	if(receiveCtrlPkt(C_START, &fileSize, filePath) < 0)
+		return -1;
+	
+	al.file = openFile(filePath);
+	
+	if(receiveData(filePath, fileSize) < 0)
+		return -1;
+		
+	if (fclose(al.file) < 0) {
+		perror("initAppInModeReceiver()");
+		return -1;
+	}
+
+	if (receiveCtrlPkt(C_END, &fileSize, filePath) < 0)
+		return -1;
+	
+	return 0;	
+}
+
 int receiveData(char * filePath, int fileSize){
 	
 
@@ -128,59 +193,14 @@ int receiveData(char * filePath, int fileSize){
 		bytesAcumulator += bytesRead;
 		fwrite(buffer, sizeof(char), bytesRead, al.file);
 		
-		sequenceNumber++;
-		sequenceNumber % 255;
+		sequenceNumber = (sequenceNumber + 1) % 255;
 	}
-
-	if (fclose(al.file) < 0) {
-		perror("receiveData()");
-		return -1;
-	}
-
-	if (receiveCtrlPkt(C_END, &fileSize, &filePath) < 0)
-		return -1;
 
 	printf("File received!\n");
 
 	return 0;
 }
 
-int sendCtrlPkt(int ctrlField, char * filePath, int fileSize){
-	char sizeString[16];
-	sprintf(sizeString, "%d", fileSize);
-
-	int pktSize = 5 + strlen(sizeString) + strlen(filePath); //size of header + trailer is 5
-
-	unsigned char ctrlPckg[pktSize];
-
-	ctrlPckg[0] = ctrlField + '0'; //unsigned char corresponding to int
-	ctrlPckg[1] = FILE_SIZE + '0';
-	ctrlPckg[2] = strlen(sizeString) + '0';
-
-
-	int i, acumulator = 3;
-	for(i = 0; i < strlen(sizeString); i++) {
-		ctrlPckg[acumulator] = sizeString[i];
-		acumulator++;;
-	}
-
-	ctrlPckg[acumulator] = FILE_NAME + '0';
-	acumulator++;
-	ctrlPckg[acumulator] = strlen(filePath) + '0';
-	acumulator++;
-
-	for(i = 0; i < strlen(filePath); i++) {
-		ctrlPckg[acumulator] = filePath[i];
-		acumulator++;;
-	}
-
-	if (llwrite(al.fd, ctrlPckg, pktSize) < 0) {
-		perror("sendCtrlPkt()");
-		return -1;
-	}
-
-	return 0;
-}
 int receiveCtrlPkt(int ctrlField, int * fileSize, char * filePath){
 	unsigned char info[MAX_PKT_SIZE];
 
@@ -189,69 +209,45 @@ int receiveCtrlPkt(int ctrlField, int * fileSize, char * filePath){
 		return -1;
 	}
 	
-	if ((info[0] - '0') != ctrlField) {
+	if (info[0] != ctrlField) {
 		printf("ERROR in receiveCtrlPkt(): unexpected control field!\n");
 		return -1;
 	}
 
-	if ((info[1] - '0') != FILE_SIZE) {
+	if (info[1] != FILE_SIZE) {
 		printf("ERROR in receiveCtrlPkt(): unexpected size param!\n");
 		return -1;
 	}
 
 	int i;
-	int fileSizeLength = (info[2] - '0');
+	int fileSizeLength = (int)info[2];
 	int	acumulator = 3;
 
 	char fileSizeStr[MAX_PKT_SIZE];
 
 	for(i = 0; i < fileSizeLength; i++) {
-		fileSizeStr[i] = info[acumulator];
-		acumulator++;
+		fileSizeStr[i] = info[acumulator++];
 	}
 
 	fileSizeStr[fileSizeLength] = '\0';
 
 	(*fileSize) = atoi(fileSizeStr);
 
-	if((info[acumulator] - '0') != FILE_NAME) {
+	if(info[acumulator++] != FILE_NAME) {
 		printf("ERROR in receiveCtrlPkt(): unexpected name param!\n");
 		return -1;
 	}
-
-	acumulator++;
 	
-	int pathLength = (info[acumulator] - '0');
-	acumulator++;
+	int pathLength = info[acumulator++];
 
 	char pathStr[MAX_PKT_SIZE];
 	
 	for(i = 0; i < pathLength; i++) {
-		pathStr[i] = info[acumulator];
-		acumulator++;
+		pathStr[i] = info[acumulator++];
 	}
 
 	pathStr[pathLength] = '\0';
 	strcpy(filePath, pathStr);
-
-	return 0;
-}
-
-int sendDataPkt(char * buffer, int bytesRead, int sequenceNumber){
-	int size = bytesRead + 4;
-	unsigned char dataPckg[size];
-
-	dataPckg[0] = C_DATA + '0';
-	dataPckg[1] = sequenceNumber + '0';
-
-	dataPckg[2] = bytesRead / 256;
-	dataPckg[3] = bytesRead % 256;
-	memcpy(&dataPckg[4], buffer, bytesRead);
-
-	if (llwrite(al.fd, dataPckg, size) < 0) {
-		printf("ERROR in sendDataPkt(): llwrite() function error!\n");
-		return -1;
-	}
 
 	return 0;
 }
@@ -268,8 +264,8 @@ int receiveDataPkt(unsigned char * buffer,int sequenceNumber){
 	if (bytesRead == 0)
 		return 0;
 
-	int C = info[0] - '0';
-	int N = info[1] - '0';
+	int C = (int) info[0];
+	int N = (int) info[1];
 
 	if (C != C_DATA) {
 		printf("ERROR in receiveDataPkt(): control field it's different from C_DATA!\n");

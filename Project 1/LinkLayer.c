@@ -554,5 +554,5 @@ int llclose (int fd) {
 	tcsetattr(fd,TCSANOW,&oldtio);
     close(fd);
 	
-	return 1;
+	return 0;
 }
