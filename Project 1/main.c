@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include "LinkLayer.h"
+#include "ApplicationLayer.h"
 
 typedef struct ApplicationLayers {
     int fileDescriptor;
