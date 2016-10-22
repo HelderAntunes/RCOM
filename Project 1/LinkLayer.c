@@ -40,7 +40,7 @@ int llopen (int porta, int flagMode) {
     tcgetattr(fd,&oldtio); /* save current port settings */
 
     bzero(&newtio, sizeof(newtio));
-    newtio.c_cflag = BAUDRATE | CS8 | CLOCAL | CREAD;
+    newtio.c_cflag = linkLayer.baudRate | CS8 | CLOCAL | CREAD;
     newtio.c_iflag = IGNPAR;
     newtio.c_oflag = 0;
 
