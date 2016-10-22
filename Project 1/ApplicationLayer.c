@@ -18,6 +18,8 @@ int initAppLayer(char * port, int mode, char * filePath, int timeout, int retrie
 
 	al.fd = llopen(0, mode);
 
+	printf("Connection established\n");
+
 	if(al.fd == -1){
 		return -1;
 	}
@@ -35,6 +37,8 @@ int initAppLayer(char * port, int mode, char * filePath, int timeout, int retrie
 	if(llclose(al.fd) == -1){
 		return -1;
 	}
+
+	printf("Disconnected\n");
 
 	return 0;
 }

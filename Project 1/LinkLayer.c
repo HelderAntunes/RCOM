@@ -32,6 +32,8 @@ void configLinkLayer(char* port, int baudRate, unsigned int timeout, unsigned in
 }
 
 int llopen (int porta, int flagMode) {
+	srand(time(NULL));
+
 	mode = flagMode;
 
 	int fd = open(linkLayer.port, O_RDWR | O_NOCTTY | O_NONBLOCK);
@@ -447,6 +449,13 @@ int llread (int fd, char * buffer) {
 	int destuffedSize = destuffFrame(frame, frame_size, destuffedFrame);
 
 	int dataSize = destuffedSize - 6; //6 bytes are used in prefix and posfix
+
+	//Simulate error
+	if(rand() % 200 == 1){
+		printf("ERROR Simulation\n");
+		int errorByte = (rand() % dataSize) + 4;
+		destuffedFrame[errorByte] = C_UA;
+	}
 
 	//Check errors
 	unsigned char BCC2 = calcBCC2(&destuffedFrame[4], dataSize);
