@@ -1,0 +1,11 @@
+<map id="initAppInModeReceiver" name="initAppInModeReceiver">
+<area shape="rect" id="node2" href="$_application_layer_8c.html#a6465fa1e9d952b62a89f0a7a40f5ca6c" title="receiveCtrlPkt" alt="" coords="347,49,450,76"/>
+<area shape="rect" id="node8" href="$_application_layer_8c.html#a1c0fc35c048ca923a6a3d7c32f19c5b7" title="openFile" alt="" coords="216,87,287,113"/>
+<area shape="rect" id="node9" href="$_application_layer_8c.html#ade650a6b7774675821e810c6063b416b" title="receiveData" alt="" coords="207,137,296,164"/>
+<area shape="rect" id="node3" href="$_link_layer_8c.html#a83125bdb92acfac65a4b2f65451b93ad" title="llread" alt="" coords="501,81,555,108"/>
+<area shape="rect" id="node4" href="$_link_layer_8c.html#a95c73f0a524d57f76e13b7cfc374bf8b" title="receiveFrame" alt="" coords="603,5,701,32"/>
+<area shape="rect" id="node5" href="$_link_layer_8c.html#afc646ec0625cc02e096717bbaeb58b6c" title="destuffFrame" alt="" coords="603,56,701,83"/>
+<area shape="rect" id="node6" href="$_link_layer_8c.html#af100bd54838c1b9c47b8c2a7b6e7417a" title="calcBCC2" alt="" coords="612,107,692,133"/>
+<area shape="rect" id="node7" href="$_link_layer_8c.html#a4a50b0646c368af6f18a140be321d37e" title="sendFrame" alt="" coords="609,157,695,184"/>
+<area shape="rect" id="node10" href="$_application_layer_8c.html#a2eecdbd990cbc422048dc5889a9fdb36" title="receiveDataPkt" alt="" coords="344,112,453,139"/>
+</map>

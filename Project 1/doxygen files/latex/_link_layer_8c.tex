@@ -1,0 +1,393 @@
+\hypertarget{_link_layer_8c}{}\section{Link\+Layer.\+c File Reference}
+\label{_link_layer_8c}\index{Link\+Layer.\+c@{Link\+Layer.\+c}}
+{\ttfamily \#include \char`\"{}Link\+Layer.\+h\char`\"{}}\newline
+Include dependency graph for Link\+Layer.\+c\+:
+% FIG 0
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{_link_layer_8c_adc4d249c47efd1729a17f2782de863c2}{atende} ()
+\item 
+int \hyperlink{_link_layer_8c_ae3adefc5c7050c8c753406243f6e387b}{try\+Connect\+In\+Mode\+Transmitter} (int fd)
+\item 
+int \hyperlink{_link_layer_8c_a9bcc169eb3dbde7e90469a4157ae59ae}{try\+Connect\+In\+Mode\+Receiver} (int fd)
+\item 
+void \hyperlink{_link_layer_8c_a921e0df85dc249ec36aedf814999ebce}{send\+S\+ET} (int fd)
+\item 
+int \hyperlink{_link_layer_8c_a4a50b0646c368af6f18a140be321d37e}{send\+Frame} (int fd, unsigned char a, unsigned char c)
+\item 
+char \hyperlink{_link_layer_8c_af100bd54838c1b9c47b8c2a7b6e7417a}{calc\+B\+C\+C2} (char $\ast$buffer, int length)
+\item 
+void \hyperlink{_link_layer_8c_ad0f460fdc3cf0d07f99cf95846b3adb6}{make\+Buffer\+Stuffed} (char $\ast$buffer\+Stuffed, char $\ast$buffer, int length)
+\item 
+int \hyperlink{_link_layer_8c_afc646ec0625cc02e096717bbaeb58b6c}{destuff\+Frame} (unsigned char $\ast$frame, int frame\+Size, unsigned char $\ast$destuffed\+Frame)
+\item 
+int \hyperlink{_link_layer_8c_a998b76d7c3b3f1facf3523bb15981235}{get\+Num\+Of\+Escape\+Characters\+Required} (char $\ast$buffer, int length)
+\item 
+int \hyperlink{_link_layer_8c_a1ebf65def63a709ab3869880d13e0430}{read\+Supervison\+Or\+Non\+Numerated\+Frame} (int fd, char $\ast$frame)
+\item 
+int \hyperlink{_link_layer_8c_a254005ed520aa27c3374b12b399f36d4}{try\+Send\+Frame} (int fd, char $\ast$frame, int frame\+Length)
+\item 
+int \hyperlink{_link_layer_8c_a9425d4230d869f944286e5cfb40c0e6b}{construct\+Frame} (char $\ast$frame, char $\ast$buffer, int length)
+\item 
+void \hyperlink{_link_layer_8c_a46282fee205709c78a9acc767a75e01f}{read\+Confirmation} (int fd)
+\item 
+int \hyperlink{_link_layer_8c_a95c73f0a524d57f76e13b7cfc374bf8b}{receive\+Frame} (int fd, unsigned char $\ast$frame)
+\item 
+int \hyperlink{_link_layer_8c_ace3c2f1f6595ee8131668150c07cc4e6}{try\+Disconnect\+In\+Mode\+Transmitter} (int fd)
+\item 
+int \hyperlink{_link_layer_8c_a71a03c9c339c24c01ca46bb0e55b70e3}{try\+Disconnect\+In\+Mode\+Receiver} (int fd)
+\item 
+void \hyperlink{_link_layer_8c_a98b68751aa4b7e5bc299e9d17bcd89be}{config\+Link\+Layer} (char $\ast$port, int baud\+Rate, unsigned int timeout, unsigned int num\+Transmissions)
+\item 
+int \hyperlink{_link_layer_8c_a41d49f67a712d9f9a92ecdcf850df7c3}{llopen} (int porta, int flag\+Mode)
+\item 
+int \hyperlink{_link_layer_8c_a7566fe39434784a0bc29e8b0e64485fc}{llwrite} (int fd, char $\ast$buffer, int length)
+\item 
+int \hyperlink{_link_layer_8c_a83125bdb92acfac65a4b2f65451b93ad}{llread} (int fd, char $\ast$buffer)
+\item 
+int \hyperlink{_link_layer_8c_a343e4b5928516727236a390a25f28c77}{llclose} (int fd)
+\end{DoxyCompactItemize}
+\subsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+struct termios oldtio \hyperlink{_link_layer_8c_abc97f5054a1b45039965e4ee787abc03}{newtio}
+\item 
+int \hyperlink{_link_layer_8c_a1ea5d0cb93f22f7d0fdf804bd68c3326}{mode}
+\item 
+volatile int \hyperlink{_link_layer_8c_a5fbc721140a2ca81a3fcbdafaa668bdd}{S\+T\+OP} =\hyperlink{_link_layer_8h_aa93f0eb578d23995850d61f7d61c55c1}{F\+A\+L\+SE}
+\item 
+int \hyperlink{_link_layer_8c_aad79a6e50416658dee40f6ecf1abe802}{is\+To\+Send\+Message} =\hyperlink{_link_layer_8h_aa8cecfc5c5c054d2875c03e77b7be15d}{T\+R\+UE}
+\item 
+int \hyperlink{_link_layer_8c_a64e3b8d4f87de890cc5ee7edee65b616}{conta} =1
+\end{DoxyCompactItemize}
+
+
+\subsection{Function Documentation}
+\hypertarget{_link_layer_8c_adc4d249c47efd1729a17f2782de863c2}{}\label{_link_layer_8c_adc4d249c47efd1729a17f2782de863c2} 
+\index{Link\+Layer.\+c@{Link\+Layer.\+c}!atende@{atende}}
+\index{atende@{atende}!Link\+Layer.\+c@{Link\+Layer.\+c}}
+\subsubsection{\texorpdfstring{atende()}{atende()}}
+{\footnotesize\ttfamily void atende (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Definition at line 76 of file Link\+Layer.\+c.
+
+Here is the caller graph for this function\+:
+% FIG 1
+\hypertarget{_link_layer_8c_af100bd54838c1b9c47b8c2a7b6e7417a}{}\label{_link_layer_8c_af100bd54838c1b9c47b8c2a7b6e7417a} 
+\index{Link\+Layer.\+c@{Link\+Layer.\+c}!calc\+B\+C\+C2@{calc\+B\+C\+C2}}
+\index{calc\+B\+C\+C2@{calc\+B\+C\+C2}!Link\+Layer.\+c@{Link\+Layer.\+c}}
+\subsubsection{\texorpdfstring{calc\+B\+C\+C2()}{calcBCC2()}}
+{\footnotesize\ttfamily char calc\+B\+C\+C2 (\begin{DoxyParamCaption}\item[{char $\ast$}]{buffer,  }\item[{int}]{length }\end{DoxyParamCaption})}
+
+
+
+Definition at line 219 of file Link\+Layer.\+c.
+
+Here is the caller graph for this function\+:
+% FIG 2
+\hypertarget{_link_layer_8c_a98b68751aa4b7e5bc299e9d17bcd89be}{}\label{_link_layer_8c_a98b68751aa4b7e5bc299e9d17bcd89be} 
+\index{Link\+Layer.\+c@{Link\+Layer.\+c}!config\+Link\+Layer@{config\+Link\+Layer}}
+\index{config\+Link\+Layer@{config\+Link\+Layer}!Link\+Layer.\+c@{Link\+Layer.\+c}}
+\subsubsection{\texorpdfstring{config\+Link\+Layer()}{configLinkLayer()}}
+{\footnotesize\ttfamily void config\+Link\+Layer (\begin{DoxyParamCaption}\item[{char $\ast$}]{port,  }\item[{int}]{baud\+Rate,  }\item[{unsigned int}]{timeout,  }\item[{unsigned int}]{num\+Transmissions }\end{DoxyParamCaption})}
+
+
+
+Definition at line 26 of file Link\+Layer.\+c.
+
+Here is the caller graph for this function\+:
+% FIG 3
+\hypertarget{_link_layer_8c_a9425d4230d869f944286e5cfb40c0e6b}{}\label{_link_layer_8c_a9425d4230d869f944286e5cfb40c0e6b} 
+\index{Link\+Layer.\+c@{Link\+Layer.\+c}!construct\+Frame@{construct\+Frame}}
+\index{construct\+Frame@{construct\+Frame}!Link\+Layer.\+c@{Link\+Layer.\+c}}
+\subsubsection{\texorpdfstring{construct\+Frame()}{constructFrame()}}
+{\footnotesize\ttfamily int construct\+Frame (\begin{DoxyParamCaption}\item[{char $\ast$}]{frame,  }\item[{char $\ast$}]{buffer,  }\item[{int}]{length }\end{DoxyParamCaption})}
+
+
+
+Definition at line 171 of file Link\+Layer.\+c.
+
+Here is the call graph for this function\+:
+% FIG 4
+Here is the caller graph for this function\+:
+% FIG 5
+\hypertarget{_link_layer_8c_afc646ec0625cc02e096717bbaeb58b6c}{}\label{_link_layer_8c_afc646ec0625cc02e096717bbaeb58b6c} 
+\index{Link\+Layer.\+c@{Link\+Layer.\+c}!destuff\+Frame@{destuff\+Frame}}
+\index{destuff\+Frame@{destuff\+Frame}!Link\+Layer.\+c@{Link\+Layer.\+c}}
+\subsubsection{\texorpdfstring{destuff\+Frame()}{destuffFrame()}}
+{\footnotesize\ttfamily int destuff\+Frame (\begin{DoxyParamCaption}\item[{unsigned char $\ast$}]{frame,  }\item[{int}]{frame\+Size,  }\item[{unsigned char $\ast$}]{destuffed\+Frame }\end{DoxyParamCaption})}
+
+
+
+Definition at line 416 of file Link\+Layer.\+c.
+
+Here is the caller graph for this function\+:
+% FIG 6
+\hypertarget{_link_layer_8c_a998b76d7c3b3f1facf3523bb15981235}{}\label{_link_layer_8c_a998b76d7c3b3f1facf3523bb15981235} 
+\index{Link\+Layer.\+c@{Link\+Layer.\+c}!get\+Num\+Of\+Escape\+Characters\+Required@{get\+Num\+Of\+Escape\+Characters\+Required}}
+\index{get\+Num\+Of\+Escape\+Characters\+Required@{get\+Num\+Of\+Escape\+Characters\+Required}!Link\+Layer.\+c@{Link\+Layer.\+c}}
+\subsubsection{\texorpdfstring{get\+Num\+Of\+Escape\+Characters\+Required()}{getNumOfEscapeCharactersRequired()}}
+{\footnotesize\ttfamily int get\+Num\+Of\+Escape\+Characters\+Required (\begin{DoxyParamCaption}\item[{char $\ast$}]{buffer,  }\item[{int}]{length }\end{DoxyParamCaption})}
+
+
+
+Definition at line 196 of file Link\+Layer.\+c.
+
+Here is the caller graph for this function\+:
+% FIG 7
+\hypertarget{_link_layer_8c_a343e4b5928516727236a390a25f28c77}{}\label{_link_layer_8c_a343e4b5928516727236a390a25f28c77} 
+\index{Link\+Layer.\+c@{Link\+Layer.\+c}!llclose@{llclose}}
+\index{llclose@{llclose}!Link\+Layer.\+c@{Link\+Layer.\+c}}
+\subsubsection{\texorpdfstring{llclose()}{llclose()}}
+{\footnotesize\ttfamily int llclose (\begin{DoxyParamCaption}\item[{int}]{fd }\end{DoxyParamCaption})}
+
+
+
+Definition at line 562 of file Link\+Layer.\+c.
+
+Here is the call graph for this function\+:
+% FIG 8
+Here is the caller graph for this function\+:
+% FIG 9
+\hypertarget{_link_layer_8c_a41d49f67a712d9f9a92ecdcf850df7c3}{}\label{_link_layer_8c_a41d49f67a712d9f9a92ecdcf850df7c3} 
+\index{Link\+Layer.\+c@{Link\+Layer.\+c}!llopen@{llopen}}
+\index{llopen@{llopen}!Link\+Layer.\+c@{Link\+Layer.\+c}}
+\subsubsection{\texorpdfstring{llopen()}{llopen()}}
+{\footnotesize\ttfamily int llopen (\begin{DoxyParamCaption}\item[{int}]{porta,  }\item[{int}]{flag\+Mode }\end{DoxyParamCaption})}
+
+
+
+Definition at line 34 of file Link\+Layer.\+c.
+
+Here is the call graph for this function\+:
+% FIG 10
+Here is the caller graph for this function\+:
+% FIG 11
+\hypertarget{_link_layer_8c_a83125bdb92acfac65a4b2f65451b93ad}{}\label{_link_layer_8c_a83125bdb92acfac65a4b2f65451b93ad} 
+\index{Link\+Layer.\+c@{Link\+Layer.\+c}!llread@{llread}}
+\index{llread@{llread}!Link\+Layer.\+c@{Link\+Layer.\+c}}
+\subsubsection{\texorpdfstring{llread()}{llread()}}
+{\footnotesize\ttfamily int llread (\begin{DoxyParamCaption}\item[{int}]{fd,  }\item[{char $\ast$}]{buffer }\end{DoxyParamCaption})}
+
+
+
+Definition at line 431 of file Link\+Layer.\+c.
+
+Here is the call graph for this function\+:
+% FIG 12
+Here is the caller graph for this function\+:
+% FIG 13
+\hypertarget{_link_layer_8c_a7566fe39434784a0bc29e8b0e64485fc}{}\label{_link_layer_8c_a7566fe39434784a0bc29e8b0e64485fc} 
+\index{Link\+Layer.\+c@{Link\+Layer.\+c}!llwrite@{llwrite}}
+\index{llwrite@{llwrite}!Link\+Layer.\+c@{Link\+Layer.\+c}}
+\subsubsection{\texorpdfstring{llwrite()}{llwrite()}}
+{\footnotesize\ttfamily int llwrite (\begin{DoxyParamCaption}\item[{int}]{fd,  }\item[{char $\ast$}]{buffer,  }\item[{int}]{length }\end{DoxyParamCaption})}
+
+
+
+Definition at line 152 of file Link\+Layer.\+c.
+
+Here is the call graph for this function\+:
+% FIG 14
+Here is the caller graph for this function\+:
+% FIG 15
+\hypertarget{_link_layer_8c_ad0f460fdc3cf0d07f99cf95846b3adb6}{}\label{_link_layer_8c_ad0f460fdc3cf0d07f99cf95846b3adb6} 
+\index{Link\+Layer.\+c@{Link\+Layer.\+c}!make\+Buffer\+Stuffed@{make\+Buffer\+Stuffed}}
+\index{make\+Buffer\+Stuffed@{make\+Buffer\+Stuffed}!Link\+Layer.\+c@{Link\+Layer.\+c}}
+\subsubsection{\texorpdfstring{make\+Buffer\+Stuffed()}{makeBufferStuffed()}}
+{\footnotesize\ttfamily void make\+Buffer\+Stuffed (\begin{DoxyParamCaption}\item[{char $\ast$}]{buffer\+Stuffed,  }\item[{char $\ast$}]{buffer,  }\item[{int}]{length }\end{DoxyParamCaption})}
+
+
+
+Definition at line 207 of file Link\+Layer.\+c.
+
+Here is the caller graph for this function\+:
+% FIG 16
+\hypertarget{_link_layer_8c_a46282fee205709c78a9acc767a75e01f}{}\label{_link_layer_8c_a46282fee205709c78a9acc767a75e01f} 
+\index{Link\+Layer.\+c@{Link\+Layer.\+c}!read\+Confirmation@{read\+Confirmation}}
+\index{read\+Confirmation@{read\+Confirmation}!Link\+Layer.\+c@{Link\+Layer.\+c}}
+\subsubsection{\texorpdfstring{read\+Confirmation()}{readConfirmation()}}
+{\footnotesize\ttfamily void read\+Confirmation (\begin{DoxyParamCaption}\item[{int}]{fd }\end{DoxyParamCaption})}
+
+
+
+Definition at line 238 of file Link\+Layer.\+c.
+
+Here is the call graph for this function\+:
+% FIG 17
+Here is the caller graph for this function\+:
+% FIG 18
+\hypertarget{_link_layer_8c_a1ebf65def63a709ab3869880d13e0430}{}\label{_link_layer_8c_a1ebf65def63a709ab3869880d13e0430} 
+\index{Link\+Layer.\+c@{Link\+Layer.\+c}!read\+Supervison\+Or\+Non\+Numerated\+Frame@{read\+Supervison\+Or\+Non\+Numerated\+Frame}}
+\index{read\+Supervison\+Or\+Non\+Numerated\+Frame@{read\+Supervison\+Or\+Non\+Numerated\+Frame}!Link\+Layer.\+c@{Link\+Layer.\+c}}
+\subsubsection{\texorpdfstring{read\+Supervison\+Or\+Non\+Numerated\+Frame()}{readSupervisonOrNonNumeratedFrame()}}
+{\footnotesize\ttfamily int read\+Supervison\+Or\+Non\+Numerated\+Frame (\begin{DoxyParamCaption}\item[{int}]{fd,  }\item[{char $\ast$}]{frame }\end{DoxyParamCaption})}
+
+
+
+Definition at line 263 of file Link\+Layer.\+c.
+
+Here is the caller graph for this function\+:
+% FIG 19
+\hypertarget{_link_layer_8c_a95c73f0a524d57f76e13b7cfc374bf8b}{}\label{_link_layer_8c_a95c73f0a524d57f76e13b7cfc374bf8b} 
+\index{Link\+Layer.\+c@{Link\+Layer.\+c}!receive\+Frame@{receive\+Frame}}
+\index{receive\+Frame@{receive\+Frame}!Link\+Layer.\+c@{Link\+Layer.\+c}}
+\subsubsection{\texorpdfstring{receive\+Frame()}{receiveFrame()}}
+{\footnotesize\ttfamily int receive\+Frame (\begin{DoxyParamCaption}\item[{int}]{fd,  }\item[{unsigned char $\ast$}]{frame }\end{DoxyParamCaption})}
+
+
+
+Definition at line 341 of file Link\+Layer.\+c.
+
+Here is the caller graph for this function\+:
+% FIG 20
+\hypertarget{_link_layer_8c_a4a50b0646c368af6f18a140be321d37e}{}\label{_link_layer_8c_a4a50b0646c368af6f18a140be321d37e} 
+\index{Link\+Layer.\+c@{Link\+Layer.\+c}!send\+Frame@{send\+Frame}}
+\index{send\+Frame@{send\+Frame}!Link\+Layer.\+c@{Link\+Layer.\+c}}
+\subsubsection{\texorpdfstring{send\+Frame()}{sendFrame()}}
+{\footnotesize\ttfamily int send\+Frame (\begin{DoxyParamCaption}\item[{int}]{fd,  }\item[{unsigned char}]{a,  }\item[{unsigned char}]{c }\end{DoxyParamCaption})}
+
+
+
+Definition at line 132 of file Link\+Layer.\+c.
+
+Here is the caller graph for this function\+:
+% FIG 21
+\hypertarget{_link_layer_8c_a921e0df85dc249ec36aedf814999ebce}{}\label{_link_layer_8c_a921e0df85dc249ec36aedf814999ebce} 
+\index{Link\+Layer.\+c@{Link\+Layer.\+c}!send\+S\+ET@{send\+S\+ET}}
+\index{send\+S\+ET@{send\+S\+ET}!Link\+Layer.\+c@{Link\+Layer.\+c}}
+\subsubsection{\texorpdfstring{send\+S\+E\+T()}{sendSET()}}
+{\footnotesize\ttfamily void send\+S\+ET (\begin{DoxyParamCaption}\item[{int}]{fd }\end{DoxyParamCaption})}
+
+
+
+Definition at line 108 of file Link\+Layer.\+c.
+
+Here is the caller graph for this function\+:
+% FIG 22
+\hypertarget{_link_layer_8c_a9bcc169eb3dbde7e90469a4157ae59ae}{}\label{_link_layer_8c_a9bcc169eb3dbde7e90469a4157ae59ae} 
+\index{Link\+Layer.\+c@{Link\+Layer.\+c}!try\+Connect\+In\+Mode\+Receiver@{try\+Connect\+In\+Mode\+Receiver}}
+\index{try\+Connect\+In\+Mode\+Receiver@{try\+Connect\+In\+Mode\+Receiver}!Link\+Layer.\+c@{Link\+Layer.\+c}}
+\subsubsection{\texorpdfstring{try\+Connect\+In\+Mode\+Receiver()}{tryConnectInModeReceiver()}}
+{\footnotesize\ttfamily int try\+Connect\+In\+Mode\+Receiver (\begin{DoxyParamCaption}\item[{int}]{fd }\end{DoxyParamCaption})}
+
+
+
+Definition at line 119 of file Link\+Layer.\+c.
+
+Here is the call graph for this function\+:
+% FIG 23
+Here is the caller graph for this function\+:
+% FIG 24
+\hypertarget{_link_layer_8c_ae3adefc5c7050c8c753406243f6e387b}{}\label{_link_layer_8c_ae3adefc5c7050c8c753406243f6e387b} 
+\index{Link\+Layer.\+c@{Link\+Layer.\+c}!try\+Connect\+In\+Mode\+Transmitter@{try\+Connect\+In\+Mode\+Transmitter}}
+\index{try\+Connect\+In\+Mode\+Transmitter@{try\+Connect\+In\+Mode\+Transmitter}!Link\+Layer.\+c@{Link\+Layer.\+c}}
+\subsubsection{\texorpdfstring{try\+Connect\+In\+Mode\+Transmitter()}{tryConnectInModeTransmitter()}}
+{\footnotesize\ttfamily int try\+Connect\+In\+Mode\+Transmitter (\begin{DoxyParamCaption}\item[{int}]{fd }\end{DoxyParamCaption})}
+
+
+
+Definition at line 82 of file Link\+Layer.\+c.
+
+Here is the call graph for this function\+:
+% FIG 25
+Here is the caller graph for this function\+:
+% FIG 26
+\hypertarget{_link_layer_8c_a71a03c9c339c24c01ca46bb0e55b70e3}{}\label{_link_layer_8c_a71a03c9c339c24c01ca46bb0e55b70e3} 
+\index{Link\+Layer.\+c@{Link\+Layer.\+c}!try\+Disconnect\+In\+Mode\+Receiver@{try\+Disconnect\+In\+Mode\+Receiver}}
+\index{try\+Disconnect\+In\+Mode\+Receiver@{try\+Disconnect\+In\+Mode\+Receiver}!Link\+Layer.\+c@{Link\+Layer.\+c}}
+\subsubsection{\texorpdfstring{try\+Disconnect\+In\+Mode\+Receiver()}{tryDisconnectInModeReceiver()}}
+{\footnotesize\ttfamily int try\+Disconnect\+In\+Mode\+Receiver (\begin{DoxyParamCaption}\item[{int}]{fd }\end{DoxyParamCaption})}
+
+
+
+Definition at line 546 of file Link\+Layer.\+c.
+
+Here is the call graph for this function\+:
+% FIG 27
+Here is the caller graph for this function\+:
+% FIG 28
+\hypertarget{_link_layer_8c_ace3c2f1f6595ee8131668150c07cc4e6}{}\label{_link_layer_8c_ace3c2f1f6595ee8131668150c07cc4e6} 
+\index{Link\+Layer.\+c@{Link\+Layer.\+c}!try\+Disconnect\+In\+Mode\+Transmitter@{try\+Disconnect\+In\+Mode\+Transmitter}}
+\index{try\+Disconnect\+In\+Mode\+Transmitter@{try\+Disconnect\+In\+Mode\+Transmitter}!Link\+Layer.\+c@{Link\+Layer.\+c}}
+\subsubsection{\texorpdfstring{try\+Disconnect\+In\+Mode\+Transmitter()}{tryDisconnectInModeTransmitter()}}
+{\footnotesize\ttfamily int try\+Disconnect\+In\+Mode\+Transmitter (\begin{DoxyParamCaption}\item[{int}]{fd }\end{DoxyParamCaption})}
+
+
+
+Definition at line 521 of file Link\+Layer.\+c.
+
+Here is the call graph for this function\+:
+% FIG 29
+Here is the caller graph for this function\+:
+% FIG 30
+\hypertarget{_link_layer_8c_a254005ed520aa27c3374b12b399f36d4}{}\label{_link_layer_8c_a254005ed520aa27c3374b12b399f36d4} 
+\index{Link\+Layer.\+c@{Link\+Layer.\+c}!try\+Send\+Frame@{try\+Send\+Frame}}
+\index{try\+Send\+Frame@{try\+Send\+Frame}!Link\+Layer.\+c@{Link\+Layer.\+c}}
+\subsubsection{\texorpdfstring{try\+Send\+Frame()}{trySendFrame()}}
+{\footnotesize\ttfamily int try\+Send\+Frame (\begin{DoxyParamCaption}\item[{int}]{fd,  }\item[{char $\ast$}]{frame,  }\item[{int}]{frame\+Length }\end{DoxyParamCaption})}
+
+
+
+Definition at line 228 of file Link\+Layer.\+c.
+
+Here is the call graph for this function\+:
+% FIG 31
+Here is the caller graph for this function\+:
+% FIG 32
+
+
+\subsection{Variable Documentation}
+\hypertarget{_link_layer_8c_a64e3b8d4f87de890cc5ee7edee65b616}{}\label{_link_layer_8c_a64e3b8d4f87de890cc5ee7edee65b616} 
+\index{Link\+Layer.\+c@{Link\+Layer.\+c}!conta@{conta}}
+\index{conta@{conta}!Link\+Layer.\+c@{Link\+Layer.\+c}}
+\subsubsection{\texorpdfstring{conta}{conta}}
+{\footnotesize\ttfamily int conta =1}
+
+
+
+Definition at line 7 of file Link\+Layer.\+c.
+
+\hypertarget{_link_layer_8c_aad79a6e50416658dee40f6ecf1abe802}{}\label{_link_layer_8c_aad79a6e50416658dee40f6ecf1abe802} 
+\index{Link\+Layer.\+c@{Link\+Layer.\+c}!is\+To\+Send\+Message@{is\+To\+Send\+Message}}
+\index{is\+To\+Send\+Message@{is\+To\+Send\+Message}!Link\+Layer.\+c@{Link\+Layer.\+c}}
+\subsubsection{\texorpdfstring{is\+To\+Send\+Message}{isToSendMessage}}
+{\footnotesize\ttfamily int is\+To\+Send\+Message =\hyperlink{_link_layer_8h_aa8cecfc5c5c054d2875c03e77b7be15d}{T\+R\+UE}}
+
+
+
+Definition at line 7 of file Link\+Layer.\+c.
+
+\hypertarget{_link_layer_8c_a1ea5d0cb93f22f7d0fdf804bd68c3326}{}\label{_link_layer_8c_a1ea5d0cb93f22f7d0fdf804bd68c3326} 
+\index{Link\+Layer.\+c@{Link\+Layer.\+c}!mode@{mode}}
+\index{mode@{mode}!Link\+Layer.\+c@{Link\+Layer.\+c}}
+\subsubsection{\texorpdfstring{mode}{mode}}
+{\footnotesize\ttfamily int mode}
+
+
+
+Definition at line 4 of file Link\+Layer.\+c.
+
+\hypertarget{_link_layer_8c_abc97f5054a1b45039965e4ee787abc03}{}\label{_link_layer_8c_abc97f5054a1b45039965e4ee787abc03} 
+\index{Link\+Layer.\+c@{Link\+Layer.\+c}!newtio@{newtio}}
+\index{newtio@{newtio}!Link\+Layer.\+c@{Link\+Layer.\+c}}
+\subsubsection{\texorpdfstring{newtio}{newtio}}
+{\footnotesize\ttfamily struct termios oldtio newtio}
+
+
+
+Definition at line 3 of file Link\+Layer.\+c.
+
+\hypertarget{_link_layer_8c_a5fbc721140a2ca81a3fcbdafaa668bdd}{}\label{_link_layer_8c_a5fbc721140a2ca81a3fcbdafaa668bdd} 
+\index{Link\+Layer.\+c@{Link\+Layer.\+c}!S\+T\+OP@{S\+T\+OP}}
+\index{S\+T\+OP@{S\+T\+OP}!Link\+Layer.\+c@{Link\+Layer.\+c}}
+\subsubsection{\texorpdfstring{S\+T\+OP}{STOP}}
+{\footnotesize\ttfamily volatile int S\+T\+OP =\hyperlink{_link_layer_8h_aa93f0eb578d23995850d61f7d61c55c1}{F\+A\+L\+SE}}
+
+
+
+Definition at line 6 of file Link\+Layer.\+c.
+

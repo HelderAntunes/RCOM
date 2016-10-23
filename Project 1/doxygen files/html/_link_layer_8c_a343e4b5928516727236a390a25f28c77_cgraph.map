@@ -1,0 +1,6 @@
+<map id="llclose" name="llclose">
+<area shape="rect" id="node2" href="$_link_layer_8c.html#ace3c2f1f6595ee8131668150c07cc4e6" title="tryDisconnectInModeTransmitter" alt="" coords="112,9,321,36"/>
+<area shape="rect" id="node5" href="$_link_layer_8c.html#a71a03c9c339c24c01ca46bb0e55b70e3" title="tryDisconnectInModeReceiver" alt="" coords="120,60,313,87"/>
+<area shape="rect" id="node3" href="$_link_layer_8c.html#a4a50b0646c368af6f18a140be321d37e" title="sendFrame" alt="" coords="431,5,518,32"/>
+<area shape="rect" id="node4" href="$_link_layer_8c.html#a1ebf65def63a709ab3869880d13e0430" title="readSupervisonOrNonNumerated\lFrame" alt="" coords="369,57,580,98"/>
+</map>

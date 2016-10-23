@@ -1,0 +1,172 @@
+\hypertarget{_application_layer_8c}{}\section{Application\+Layer.\+c File Reference}
+\label{_application_layer_8c}\index{Application\+Layer.\+c@{Application\+Layer.\+c}}
+{\ttfamily \#include \char`\"{}Link\+Layer.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}Application\+Layer.\+h\char`\"{}}\newline
+{\ttfamily \#include $<$stdio.\+h$>$}\newline
+{\ttfamily \#include $<$string.\+h$>$}\newline
+Include dependency graph for Application\+Layer.\+c\+:
+% FIG 0
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+F\+I\+LE $\ast$ \hyperlink{_application_layer_8c_a1c0fc35c048ca923a6a3d7c32f19c5b7}{open\+File} (char $\ast$file\+Path)
+\item 
+int \hyperlink{_application_layer_8c_ab2a500eb8b061c976b71f38037d5c0af}{init\+App\+In\+Mode\+Transmitter} (char $\ast$file\+Path)
+\item 
+int \hyperlink{_application_layer_8c_a9d994bc5d28171441839222f1336164b}{init\+App\+In\+Mode\+Receiver} (char $\ast$file\+Path)
+\item 
+int \hyperlink{_application_layer_8c_ad7f1a32ea158953c86191a7302731dfc}{send\+Data} (char $\ast$file\+Path, int file\+Size)
+\item 
+int \hyperlink{_application_layer_8c_ade650a6b7774675821e810c6063b416b}{receive\+Data} (char $\ast$file\+Path, int file\+Size)
+\item 
+int \hyperlink{_application_layer_8c_a0dde4001ff14af91da6a9b5fb89bdb1f}{send\+Ctrl\+Pkt} (int ctrl\+Field, char $\ast$file\+Path, int file\+Size)
+\item 
+int \hyperlink{_application_layer_8c_a6465fa1e9d952b62a89f0a7a40f5ca6c}{receive\+Ctrl\+Pkt} (int ctrl\+Field, int $\ast$file\+Size, char $\ast$file\+Path)
+\item 
+int \hyperlink{_application_layer_8c_a1a6d7c92c623ee7aa42d03c59b86d2c3}{send\+Data\+Pkt} (char $\ast$buffer, int bytes\+Read, int sequence\+Number)
+\item 
+int \hyperlink{_application_layer_8c_a2eecdbd990cbc422048dc5889a9fdb36}{receive\+Data\+Pkt} (unsigned char $\ast$buffer, int sequence\+Number)
+\item 
+int \hyperlink{_application_layer_8c_a8ae45941fab40b6880ff6aab12b7f528}{init\+App\+Layer} (char $\ast$port, int \hyperlink{_link_layer_8c_a1ea5d0cb93f22f7d0fdf804bd68c3326}{mode}, char $\ast$file\+Path, int timeout, int retries, int pkt\+Size, int baudrate)
+\end{DoxyCompactItemize}
+
+
+\subsection{Function Documentation}
+\hypertarget{_application_layer_8c_a9d994bc5d28171441839222f1336164b}{}\label{_application_layer_8c_a9d994bc5d28171441839222f1336164b} 
+\index{Application\+Layer.\+c@{Application\+Layer.\+c}!init\+App\+In\+Mode\+Receiver@{init\+App\+In\+Mode\+Receiver}}
+\index{init\+App\+In\+Mode\+Receiver@{init\+App\+In\+Mode\+Receiver}!Application\+Layer.\+c@{Application\+Layer.\+c}}
+\subsubsection{\texorpdfstring{init\+App\+In\+Mode\+Receiver()}{initAppInModeReceiver()}}
+{\footnotesize\ttfamily int init\+App\+In\+Mode\+Receiver (\begin{DoxyParamCaption}\item[{char $\ast$}]{file\+Path }\end{DoxyParamCaption})}
+
+
+
+Definition at line 167 of file Application\+Layer.\+c.
+
+Here is the call graph for this function\+:
+% FIG 1
+Here is the caller graph for this function\+:
+% FIG 2
+\hypertarget{_application_layer_8c_ab2a500eb8b061c976b71f38037d5c0af}{}\label{_application_layer_8c_ab2a500eb8b061c976b71f38037d5c0af} 
+\index{Application\+Layer.\+c@{Application\+Layer.\+c}!init\+App\+In\+Mode\+Transmitter@{init\+App\+In\+Mode\+Transmitter}}
+\index{init\+App\+In\+Mode\+Transmitter@{init\+App\+In\+Mode\+Transmitter}!Application\+Layer.\+c@{Application\+Layer.\+c}}
+\subsubsection{\texorpdfstring{init\+App\+In\+Mode\+Transmitter()}{initAppInModeTransmitter()}}
+{\footnotesize\ttfamily int init\+App\+In\+Mode\+Transmitter (\begin{DoxyParamCaption}\item[{char $\ast$}]{file\+Path }\end{DoxyParamCaption})}
+
+
+
+Definition at line 46 of file Application\+Layer.\+c.
+
+Here is the call graph for this function\+:
+% FIG 3
+Here is the caller graph for this function\+:
+% FIG 4
+\hypertarget{_application_layer_8c_a8ae45941fab40b6880ff6aab12b7f528}{}\label{_application_layer_8c_a8ae45941fab40b6880ff6aab12b7f528} 
+\index{Application\+Layer.\+c@{Application\+Layer.\+c}!init\+App\+Layer@{init\+App\+Layer}}
+\index{init\+App\+Layer@{init\+App\+Layer}!Application\+Layer.\+c@{Application\+Layer.\+c}}
+\subsubsection{\texorpdfstring{init\+App\+Layer()}{initAppLayer()}}
+{\footnotesize\ttfamily int init\+App\+Layer (\begin{DoxyParamCaption}\item[{char $\ast$}]{port,  }\item[{int}]{mode,  }\item[{char $\ast$}]{file\+Path,  }\item[{int}]{timeout,  }\item[{int}]{retries,  }\item[{int}]{pkt\+Size,  }\item[{int}]{baudrate }\end{DoxyParamCaption})}
+
+
+
+Definition at line 16 of file Application\+Layer.\+c.
+
+Here is the call graph for this function\+:
+% FIG 5
+Here is the caller graph for this function\+:
+% FIG 6
+\hypertarget{_application_layer_8c_a1c0fc35c048ca923a6a3d7c32f19c5b7}{}\label{_application_layer_8c_a1c0fc35c048ca923a6a3d7c32f19c5b7} 
+\index{Application\+Layer.\+c@{Application\+Layer.\+c}!open\+File@{open\+File}}
+\index{open\+File@{open\+File}!Application\+Layer.\+c@{Application\+Layer.\+c}}
+\subsubsection{\texorpdfstring{open\+File()}{openFile()}}
+{\footnotesize\ttfamily F\+I\+LE $\ast$ open\+File (\begin{DoxyParamCaption}\item[{char $\ast$}]{file\+Path }\end{DoxyParamCaption})}
+
+
+
+Definition at line 73 of file Application\+Layer.\+c.
+
+Here is the caller graph for this function\+:
+% FIG 7
+\hypertarget{_application_layer_8c_a6465fa1e9d952b62a89f0a7a40f5ca6c}{}\label{_application_layer_8c_a6465fa1e9d952b62a89f0a7a40f5ca6c} 
+\index{Application\+Layer.\+c@{Application\+Layer.\+c}!receive\+Ctrl\+Pkt@{receive\+Ctrl\+Pkt}}
+\index{receive\+Ctrl\+Pkt@{receive\+Ctrl\+Pkt}!Application\+Layer.\+c@{Application\+Layer.\+c}}
+\subsubsection{\texorpdfstring{receive\+Ctrl\+Pkt()}{receiveCtrlPkt()}}
+{\footnotesize\ttfamily int receive\+Ctrl\+Pkt (\begin{DoxyParamCaption}\item[{int}]{ctrl\+Field,  }\item[{int $\ast$}]{file\+Size,  }\item[{char $\ast$}]{file\+Path }\end{DoxyParamCaption})}
+
+
+
+Definition at line 215 of file Application\+Layer.\+c.
+
+Here is the call graph for this function\+:
+% FIG 8
+Here is the caller graph for this function\+:
+% FIG 9
+\hypertarget{_application_layer_8c_ade650a6b7774675821e810c6063b416b}{}\label{_application_layer_8c_ade650a6b7774675821e810c6063b416b} 
+\index{Application\+Layer.\+c@{Application\+Layer.\+c}!receive\+Data@{receive\+Data}}
+\index{receive\+Data@{receive\+Data}!Application\+Layer.\+c@{Application\+Layer.\+c}}
+\subsubsection{\texorpdfstring{receive\+Data()}{receiveData()}}
+{\footnotesize\ttfamily int receive\+Data (\begin{DoxyParamCaption}\item[{char $\ast$}]{file\+Path,  }\item[{int}]{file\+Size }\end{DoxyParamCaption})}
+
+
+
+Definition at line 189 of file Application\+Layer.\+c.
+
+Here is the call graph for this function\+:
+% FIG 10
+Here is the caller graph for this function\+:
+% FIG 11
+\hypertarget{_application_layer_8c_a2eecdbd990cbc422048dc5889a9fdb36}{}\label{_application_layer_8c_a2eecdbd990cbc422048dc5889a9fdb36} 
+\index{Application\+Layer.\+c@{Application\+Layer.\+c}!receive\+Data\+Pkt@{receive\+Data\+Pkt}}
+\index{receive\+Data\+Pkt@{receive\+Data\+Pkt}!Application\+Layer.\+c@{Application\+Layer.\+c}}
+\subsubsection{\texorpdfstring{receive\+Data\+Pkt()}{receiveDataPkt()}}
+{\footnotesize\ttfamily int receive\+Data\+Pkt (\begin{DoxyParamCaption}\item[{unsigned char $\ast$}]{buffer,  }\item[{int}]{sequence\+Number }\end{DoxyParamCaption})}
+
+
+
+Definition at line 266 of file Application\+Layer.\+c.
+
+Here is the call graph for this function\+:
+% FIG 12
+Here is the caller graph for this function\+:
+% FIG 13
+\hypertarget{_application_layer_8c_a0dde4001ff14af91da6a9b5fb89bdb1f}{}\label{_application_layer_8c_a0dde4001ff14af91da6a9b5fb89bdb1f} 
+\index{Application\+Layer.\+c@{Application\+Layer.\+c}!send\+Ctrl\+Pkt@{send\+Ctrl\+Pkt}}
+\index{send\+Ctrl\+Pkt@{send\+Ctrl\+Pkt}!Application\+Layer.\+c@{Application\+Layer.\+c}}
+\subsubsection{\texorpdfstring{send\+Ctrl\+Pkt()}{sendCtrlPkt()}}
+{\footnotesize\ttfamily int send\+Ctrl\+Pkt (\begin{DoxyParamCaption}\item[{int}]{ctrl\+Field,  }\item[{char $\ast$}]{file\+Path,  }\item[{int}]{file\+Size }\end{DoxyParamCaption})}
+
+
+
+Definition at line 114 of file Application\+Layer.\+c.
+
+Here is the call graph for this function\+:
+% FIG 14
+Here is the caller graph for this function\+:
+% FIG 15
+\hypertarget{_application_layer_8c_ad7f1a32ea158953c86191a7302731dfc}{}\label{_application_layer_8c_ad7f1a32ea158953c86191a7302731dfc} 
+\index{Application\+Layer.\+c@{Application\+Layer.\+c}!send\+Data@{send\+Data}}
+\index{send\+Data@{send\+Data}!Application\+Layer.\+c@{Application\+Layer.\+c}}
+\subsubsection{\texorpdfstring{send\+Data()}{sendData()}}
+{\footnotesize\ttfamily int send\+Data (\begin{DoxyParamCaption}\item[{char $\ast$}]{file\+Path,  }\item[{int}]{file\+Size }\end{DoxyParamCaption})}
+
+
+
+Definition at line 90 of file Application\+Layer.\+c.
+
+Here is the call graph for this function\+:
+% FIG 16
+Here is the caller graph for this function\+:
+% FIG 17
+\hypertarget{_application_layer_8c_a1a6d7c92c623ee7aa42d03c59b86d2c3}{}\label{_application_layer_8c_a1a6d7c92c623ee7aa42d03c59b86d2c3} 
+\index{Application\+Layer.\+c@{Application\+Layer.\+c}!send\+Data\+Pkt@{send\+Data\+Pkt}}
+\index{send\+Data\+Pkt@{send\+Data\+Pkt}!Application\+Layer.\+c@{Application\+Layer.\+c}}
+\subsubsection{\texorpdfstring{send\+Data\+Pkt()}{sendDataPkt()}}
+{\footnotesize\ttfamily int send\+Data\+Pkt (\begin{DoxyParamCaption}\item[{char $\ast$}]{buffer,  }\item[{int}]{bytes\+Read,  }\item[{int}]{sequence\+Number }\end{DoxyParamCaption})}
+
+
+
+Definition at line 148 of file Application\+Layer.\+c.
+
+Here is the call graph for this function\+:
+% FIG 18
+Here is the caller graph for this function\+:
+% FIG 19
