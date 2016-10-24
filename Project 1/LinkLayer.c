@@ -532,6 +532,7 @@ int tryDisconnectInModeTransmitter (int fd){
             if (readSupervisonOrNonNumeratedFrame(fd, DISC) == PASS_IN_STATE_MACHINE){
                 STOP = TRUE;
 				sendFrame(fd, A_SENDER, C_UA);
+				sleep(2); //To assure frame is received
             }
         }
     }

@@ -1,6 +1,37 @@
 #include "Client.h"
 #include <stdio.h>
 #include <termios.h>
+#include <string.h>
+
+void clearStdin(){
+	int c;
+	while((c = getchar()) != '\n' && c != EOF){}
+}
+
+void choosePort(char* port){
+	int choice;
+
+	printf("Port Options:\n\t0 - /dev/ttyS0\n\t1 - /dev/ttyS1\n");
+	do{
+		printf("Enter Port : ");
+		if(scanf("%d", &choice) == 0){
+			clearStdin();
+			continue;
+		}
+
+		switch(choice){
+			case 0:
+				strcpy(port , "/dev/ttyS0");
+				return;
+			case 1:
+				strcpy(port , "/dev/ttyS1");
+				return;
+			default:
+				printf("Invalid port. Please choose again\n");
+		}
+
+	}while(1);
+}
 
 int chooseBaudrate(){
 	int choice;
@@ -10,7 +41,10 @@ int chooseBaudrate(){
 
 	do{
 		printf("Enter Baud Rate: ");
-		scanf("%d", &choice);
+		if(scanf("%d", &choice) == 0){
+			clearStdin();
+			continue;
+		}
 
 		switch(choice){
 			case 0:
@@ -47,7 +81,11 @@ int chooseMaxPktSize(){
 
 	printf("Enter packets maximum size: ");
 
-	scanf("%d", &choice);
+	if(scanf("%d", &choice) == 0){
+		printf("Invalid value. Will be used default packet size: %d\n", MAX_SIZE);
+		clearStdin();
+		return MAX_SIZE;
+	}
 
 	if(choice >= MIN_SIZE && choice <= MAX_SIZE){
 		return choice;
@@ -63,7 +101,11 @@ int chooseMaxRetries(){
 
 	printf("Enter maximum number of retries: ");
 
-	scanf("%d", &choice);
+	if(scanf("%d", &choice) == 0){
+		clearStdin();
+		printf("Invalid value. Will be used default retransmission number: %d\n", DEFAULT_RETRIES);
+		return DEFAULT_RETRIES;
+	}
 
 	if(choice > 1){
 		return choice;
@@ -79,7 +121,11 @@ int chooseTimeOut(){
 
 	printf("Enter time out in seconds: ");
 
-	scanf("%d", &choice);
+	if(scanf("%d", &choice) == 0){
+		clearStdin();
+		printf("Invalid value. Will be used default time out: %d\n", DEFAULT_TIMEOUT);
+		return DEFAULT_TIMEOUT;
+	}
 
 	if(choice > 1){
 		return choice;

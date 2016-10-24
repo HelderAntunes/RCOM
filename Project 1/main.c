@@ -8,9 +8,14 @@
 
 int main(int argc, char** argv)
 {
-    printf("fdfsf\n");
+    if(argc != 2){
+		printf("Usage: %s T/R\n", argv[0]);
+		return -1;
+	}
 	
-	char* port = "/dev/ttyS0";
+	char port[12];
+
+	choosePort(port);
 
 	int baudRate = chooseBaudrate();
 	int pktSize = chooseMaxPktSize();

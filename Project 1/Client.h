@@ -20,6 +20,9 @@
 #define DEFAULT_RETRIES 3
 #define DEFAULT_TIMEOUT 5
 
+//Escolha da porta série
+void choosePort(char* port);
+
 //Escolha do Baudrate
 int chooseBaudrate();
 
