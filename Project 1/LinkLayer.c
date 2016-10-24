@@ -29,6 +29,13 @@ void configLinkLayer(char* port, int baudRate, unsigned int timeout, unsigned in
     linkLayer.sequenceNumber = 0;
     linkLayer.timeout = timeout;
     linkLayer.numTransmissions = numTransmissions;
+
+	reg.frameIReceived = 0;
+	reg.frameITransmitted = 0;
+	reg.frameITransmittedSuccess = 0;
+	reg.numberTimeOut = 0;
+	reg.numberRejSent = 0;
+	reg.numberRejReceived = 0;
 }
 
 int llopen (int porta, int flagMode) {
@@ -77,6 +84,7 @@ void atende() {
     printf("Try number: %d\n", conta);
     isToSendMessage = TRUE;
     conta++;
+	reg.numberTimeOut++;
 }
 
 int tryConnectInModeTransmitter(int fd) {
@@ -159,9 +167,11 @@ int llwrite (int fd, char * buffer, int length) {
     conta = 1;
     while(!STOP && conta <= linkLayer.numTransmissions){
 		trySendFrame(fd, frame, frameLength);
+		reg.frameITransmitted++;
     }
 
 	if (STOP) {
+		reg.frameITransmittedSuccess++;
 		return length;
 	} else {
     	return -1; // indica que o numero de transmissoes excedeu o limite.
@@ -245,6 +255,7 @@ void readConfirmation (int fd) {
                 if((confirmation[2] >> 7) == linkLayer.sequenceNumber){
                     alarm(0); // cancela alarme
                     isToSendMessage = 1;
+					reg.numberRejReceived++;
                 }
                 break;
             case C_RR:
@@ -445,6 +456,8 @@ int llread (int fd, char * buffer) {
 		}
 	}
 
+	reg.frameIReceived++;
+
 	//Destuff frame
 	int destuffedSize = destuffFrame(frame, frame_size, destuffedFrame);
 
@@ -467,6 +480,7 @@ int llread (int fd, char * buffer) {
         if (seq == linkLayer.sequenceNumber) { // nova trama
 
             //Send Reject
+			reg.numberRejSent++;
             if(seq == 0){
                 unsigned char C_REJ0 = (0 << 7) | C_REJ;
                 sendFrame(fd, A_SENDER, C_REJ0);

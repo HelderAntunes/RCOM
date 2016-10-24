@@ -44,6 +44,17 @@ typedef struct LinkLayers {
 
 LinkLayer linkLayer;
 
+typedef struct Registers {
+    int frameIReceived;
+	int frameITransmitted;
+	int frameITransmittedSuccess;
+	int numberTimeOut;
+	int numberRejSent;
+	int numberRejReceived;
+} Register;
+
+Register reg;
+
 void configLinkLayer(char* port, int baudRate, unsigned int timeout, unsigned int numTransmissions);
 
 /*
