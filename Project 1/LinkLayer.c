@@ -464,7 +464,7 @@ int llread (int fd, char * buffer) {
 	int dataSize = destuffedSize - 6; //6 bytes are used in prefix and posfix
 
 	//Simulate error
-	if(rand() % 200 == 1){
+	if(rand() % 100 == 1){
 		printf("ERROR Simulation\n");
 		int errorByte = (rand() % dataSize) + 4;
 		destuffedFrame[errorByte] = C_UA;

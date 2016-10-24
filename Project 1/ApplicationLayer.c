@@ -40,12 +40,18 @@ int initAppLayer(char * port, int mode, char * filePath, int timeout, int retrie
 
 	printf("Disconnected\n");
 
-	printf("Number frame I received: %d\n", reg.frameIReceived);
-	printf("Number frame I transmitted: %d\n", reg.frameITransmitted);
-	printf("Number frame I trasmitted successfully: %d\n", reg.frameITransmittedSuccess);
-	printf("Number Time-out: %d\n", reg.numberTimeOut);
-	printf("Number REJ Sent: %d\n", reg.numberRejSent);
-	printf("Number REJ Received: %d\n", reg.numberRejReceived);
+	//Print statistics
+	if(mode == TRANSMITTER){
+		printf("Number frame I transmitted: %d\n", reg.frameITransmitted);
+		printf("Number frame I trasmitted successfully: %d\n", reg.frameITransmittedSuccess);
+		printf("Number Time-out: %d\n", reg.numberTimeOut);
+		printf("Number REJ Received: %d\n", reg.numberRejReceived);
+	}
+	else if(mode == RECEIVER){
+		printf("Number frame I received: %d\n", reg.frameIReceived);
+		printf("Number REJ Sent: %d\n", reg.numberRejSent);
+	}
+
 
 	return 0;
 }
