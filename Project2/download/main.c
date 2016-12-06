@@ -29,7 +29,7 @@ int main (int argc, char *argv[]) {
         char host[MAX_SIZE];
         char url_path[MAX_SIZE];
         parse_url(url, user, password, host, url_path);
-        printf("url parsed: %s %s %s %s\n", user, password, host, url_path);
+        printf("url parsed: \nuser: %s\npassword: %s\nhost: %s\nurl_path: %s\n", user, password, host, url_path);
 
         char ip[MAX_SIZE];
         get_ip(host, ip);
@@ -110,7 +110,7 @@ void parse_url (const char * url, char * user, char * password, char * host, cha
     // How to Use Anonymous FTP -> https://tools.ietf.org/html/rfc1635
     if (!userAndPass_required) {
         strcpy(user, "anonymous");
-        strcpy(password, "guest");
+        strcpy(password, "anonymous");
     }
 
 }
@@ -157,6 +157,17 @@ int make_socket (char *ip, int port) {
 		exit(0);
 	}
 
+	if (port == 21) {
+		char buf[MAX_SIZE];
+		bzero(buf, sizeof(buf));
+		len = read(sockfd, buf, MAX_SIZE);
+		buf[len] = '\0';
+		printf("<%s\n", buf);
+		//220 Service ready for new user.
+		if (strncmp(buf, "220", 3) != 0)
+			return -1;
+	}
+
 	return sockfd;
 }
 
@@ -166,25 +177,33 @@ int make_socket (char *ip, int port) {
 int login (int socket, char *user, char *password) {
 	char buf[MAX_SIZE];
 	int len = 0;
-
-	strcpy(buf, "USER ");
+	
+	strcpy(buf, "user ");
 	strcat(buf, user);
 	strcat(buf, "\n");
 	write(socket, buf, strlen(buf));
-	bzero(buf, sizeof(buf));
-	len = read(socket, buf, MAX_SIZE);
+	printf(">%s\n", buf);
 
-	bzero(buf, sizeof(buf));
-	strcpy(buf, "PASS ");
-	strcat(buf, password);
-	strcat(buf, "\n");
-	write(socket, buf, strlen(buf));
 	bzero(buf, sizeof(buf));
 	len = read(socket, buf, MAX_SIZE);
 	buf[len] = '\0';
+	printf("<%s\n", buf);
 
-	if (strncmp(buf, "230", 3) != 0)
+	bzero(buf, sizeof(buf));
+	strcpy(buf, "pass ");
+	strcat(buf, password);
+	strcat(buf, "\n");
+	write(socket, buf, strlen(buf));
+	printf(">%s\n", buf);
+	
+	bzero(buf, sizeof(buf));
+	len = read(socket, buf, MAX_SIZE);
+	buf[len] = '\0';
+	printf("<%s\n", buf);
+	// 230	User logged in, proceed. Logged out if appropriate.
+	if (strncmp(buf, "230", 3) != 0) {
 		return -1;
+	}
 
 	return 0;
 }
